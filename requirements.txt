@@ -1,0 +1,10 @@
+pandas
+pdfplumber==0.11.4
+tabula-py
+numpy
+streamlit==1.38.0
+streamlit_pdf_viewer
+python-dotenv
+google-generativeai
+openpyxl
+fuzzywuzzy
