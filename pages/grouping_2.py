@@ -157,15 +157,16 @@ if 'pin_table' in st.session_state:
 
 else:
     st.write("No pin table available.")     
-    uploaded_file = st.file_uploader("Upload a exel  file", type=["csv","xlsx"])
+    uploaded_csv = st.file_uploader("Upload a exel  file", type=["csv","xlsx"])
 
-    if uploaded_file is not None:
+    if uploaded_csv is not None:
         try:
             # Try reading the uploaded file
-            if uploaded_file.name.endswith(".xlsx"):
-                df = pd.read_excel(uploaded_file)
+            st.session_state["uploaded_csv_name"] = uploaded_csv.name
+            if uploaded_csv.name.endswith(".xlsx"):
+                df = pd.read_excel(uploaded_csv)
             else:
-                df = pd.read_csv(uploaded_file)
+                df = pd.read_csv(uploaded_csv)
 
             st.write("File uploaded successfully.")
         

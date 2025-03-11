@@ -289,8 +289,30 @@ def Dual_in_line_as_per_Renesas(df):
 def final_filter(df):
     # Remove leading/trailing whitespace and replace multiple spaces with single space
     df = df.applymap(lambda x: str(x).strip().replace('  ', ' '))
-
+    df = df.fillna("")
     # Remove newlines and convert to single word
     df = df.applymap(lambda x: x.replace('\n', ' ').replace(' ', '_'))
 
+    if "Pin Designator" in df.columns:
+        df["Pin Designator"] = df["Pin Designator"].apply(
+            lambda x: int(float(x)) if isinstance(x, float) or (isinstance(x, str) and x.replace('.', '', 1).isdigit()) else x)
+
+
+    return df
+
+
+def remove_grouping_priority_columns(df):
+    """
+    Removes 'Grouping' and 'Priority' columns from a DataFrame if they exist.
+    
+    Parameters:
+        df (pd.DataFrame): The DataFrame to process.
+    
+    Returns:
+        pd.DataFrame: The DataFrame with 'Grouping' and 'Priority' columns removed.
+    """
+    columns_to_remove = ["Grouping", "Priority"]
+    for col in columns_to_remove:
+        if col in df.columns:
+            df = df.drop(columns=[col])
     return df

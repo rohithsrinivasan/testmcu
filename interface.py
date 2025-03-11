@@ -53,6 +53,7 @@ if st.session_state.input_buffer:
             part_number, number_of_pins, package_type, package_code = f.part_number_details(
                 input_part_number, st.session_state.input_buffer
             )
+            st.session_state["part number"] = part_number
             pin_table = f.extracting_pin_tables(
                 st.session_state.input_buffer, part_number, number_of_pins, package_type, package_code
             )

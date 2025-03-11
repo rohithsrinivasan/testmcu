@@ -612,7 +612,8 @@
         "\\HSTBY",
         "STANDBY",
         "STBY#",
-        "S\\T\\B\\Y\\"
+        "S\\T\\B\\Y\\",
+        "\\STBY"
     ],
     "System": [
         "#RES",
