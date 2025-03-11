@@ -74,74 +74,78 @@ if 'pin_table' in st.session_state:
     #    st.markdown(f'Type of device :red[{response.text}]')
 
     # Common operations after grouping
-    st.dataframe(pin_grouping_table)
-    no_grouping_assigned = grouping_functions.check_empty_groupings(pin_grouping_table)
-    
-    if no_grouping_assigned.empty:
-        st.info("All grouping values are filled.") 
-        st.success("Done!")
-        st.session_state["page"] = "SideAlloc" 
-        st.session_state['grouped_pin_table'] = pin_grouping_table            
-
-    else:
-        st.info("Please fill in group values for these:")
-        edited_df = st.data_editor(no_grouping_assigned)
-        edit_database = st.toggle("Edit Database", value=False)
-
-        with st.sidebar:
-            st.header("Help Box")
-            user_input = st.text_input("Enter Pin Name to get suggestions:")
-
-            json_file_paths = glob.glob(os.path.join('mcu_database', '*.json'))
-            json_data = grouping_functions.load_json_files(json_file_paths)
-
-            if user_input:
-                suggestions = grouping_functions.get_suggestions(user_input, json_data)
-                st.write("Suggestions:")
-                for suggestion, score in suggestions:
-                    st.write(f"{suggestion} (Match: {score}%)")
-
-        if edit_database:
-            json_data_labelled = grouping_functions.load_json_files_with_type_labels('mcu_database')
-            for index, row in edited_df.iterrows():
-                pin_name = row['Pin Display Name']
-                group_name = row['Grouping']
-
-                if group_name:  # If Grouping is filled
-                    group_found = False
-                    for file_path, data in json_data_labelled.items():
-                        if group_name in data:  # Check if group exists in this JSON file
-                            if pin_name not in data[group_name]:  # Check if pin already exists
-                                data[group_name].append(pin_name)  # Add pin to the group
-                                grouping_functions.save_json_file(file_path, data)  # Save updated JSON file
-                                st.markdown(
-                                    f"<p style='color: green;'>Pin '{pin_name}' has been added to Group '{group_name}' in '{os.path.basename(file_path)}'.</p>",
-                                    unsafe_allow_html=True
-                                )
-                                #st.info(f"Pin '{pin_name}' has been added to Group '{group_name}' in '{os.path.basename(file_path)}'.")
-                            else:
-                                st.info(f"Pin '{pin_name}' already exists in Group '{group_name}' in '{os.path.basename(file_path)}'.")
-                            group_found = True
-                            break  # Exit loop once the group is found
-
-                    if not group_found:  # If group is not found in any JSON file
-                        st.warning(f"Group '{group_name}' not found in any JSON file. Skipping update for Pin '{pin_name}'.")
-        else:
-            print("Edit Database is OFF. No updates will be made to JSON files.")
-            #st.info("Edit Database is OFF. No updates will be made to JSON files.")
-
-
-
-        if edited_df['Grouping'].isnull().any():
-            st.info("Please enter group names for all.")
-
-        else:
-            pin_grouping_table.update(edited_df)
-            st.text("Final Grouping Table")
-            st.dataframe(pin_grouping_table)
+        st.dataframe(pin_grouping_table)
+        no_grouping_assigned = grouping_functions.check_empty_groupings(pin_grouping_table)
+        
+        if no_grouping_assigned.empty:
+            st.info("All grouping values are filled.") 
             st.success("Done!")
             st.session_state["page"] = "SideAlloc" 
-            st.session_state['grouped_pin_table'] = pin_grouping_table                 
+            st.session_state['grouped_pin_table'] = pin_grouping_table            
+
+        else:
+            st.info("Please fill in group values for these:")
+            edited_df = st.data_editor(no_grouping_assigned)
+            edit_database = st.toggle("Edit Database", value=False)
+
+            with st.sidebar:
+                st.header("Help Box")
+                user_input = st.text_input("Enter Pin Name to get suggestions:")
+
+                json_file_paths = glob.glob(os.path.join('mcu_database', '*.json'))
+                json_data = grouping_functions.load_json_files(json_file_paths)
+
+                if user_input:
+                    suggestions = grouping_functions.get_suggestions(user_input, json_data)
+                    st.write("Suggestions:")
+                    for suggestion, score in suggestions:
+                        st.write(f"{suggestion} (Match: {score}%)")
+
+            if edit_database:
+                json_data_labelled = grouping_functions.load_json_files_with_type_labels('mcu_database')
+                for index, row in edited_df.iterrows():
+                    pin_name = row['Pin Display Name']
+                    group_name = row['Grouping']
+
+                    if group_name:  # If Grouping is filled
+                        group_found = False
+                        for file_path, data in json_data_labelled.items():
+                            if group_name in data:  # Check if group exists in this JSON file
+                                if pin_name not in data[group_name]:  # Check if pin already exists
+                                    data[group_name].append(pin_name)  # Add pin to the group
+                                    grouping_functions.save_json_file(file_path, data)  # Save updated JSON file
+                                    st.markdown(
+                                        f"<p style='color: green;'>Pin '{pin_name}' has been added to Group '{group_name}' in '{os.path.basename(file_path)}'.</p>",
+                                        unsafe_allow_html=True
+                                    )
+                                    #st.info(f"Pin '{pin_name}' has been added to Group '{group_name}' in '{os.path.basename(file_path)}'.")
+                                else:
+                                    st.info(f"Pin '{pin_name}' already exists in Group '{group_name}' in '{os.path.basename(file_path)}'.")
+                                group_found = True
+                                break  # Exit loop once the group is found
+
+                        if not group_found:  # If group is not found in any JSON file
+                            st.warning(f"Group '{group_name}' not found in any JSON file. Skipping update for Pin '{pin_name}'.")
+            else:
+                print("Edit Database is OFF. No updates will be made to JSON files.")
+                #st.info("Edit Database is OFF. No updates will be made to JSON files.")
+
+
+
+            if edited_df['Grouping'].isnull().any():
+                st.info("Please enter group names for all.")
+
+            else:
+                pin_grouping_table.update(edited_df)
+                st.text("Final Grouping Table")
+                st.dataframe(pin_grouping_table)
+                st.success("Done!")
+                st.session_state["page"] = "SideAlloc" 
+                st.session_state['grouped_pin_table'] = pin_grouping_table 
+
+    else:
+        st.info("Please select a method for grouping.")
+        pin_grouping_table = pd.DataFrame()                            
 
 
     # Check if redirection to "SideAlloc" page is needed

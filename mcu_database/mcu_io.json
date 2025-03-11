@@ -452,7 +452,9 @@
         "AD6",
         "AD7",
         "AD8",
-        "AD9"
+        "AD9",
+        "PCLBUZ0_A",
+        "PCLBUZ0_B"
     ],
     "BP IO Pins": [
         "BP_A0",
@@ -604,7 +606,9 @@
     "Switching Node": [
         "LX",
         "LY",
-        "LZ"
+        "LZ",
+        "SWCLK",
+        "SWDIO"
     ],
     "Mode Pins": [
         "MD",
@@ -999,7 +1003,8 @@
         "P1_5",
         "P1_6",
         "P1_7",
-        "P1_10"
+        "P1_10",
+        "P012"
     ],
     "Port 02": [
         "P02_0",
