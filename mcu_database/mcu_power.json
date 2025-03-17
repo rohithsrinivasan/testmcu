@@ -35,7 +35,8 @@
     "Analog Power Supply Negative ADC": [
         "ADC1_AGND",
         "ADC2_AGND",
-        "ADC_AVSS"
+        "ADC_AVSS",
+        "READY"
     ],
     "Analog Power Supply Negative VREG": [
         "VREGO1",

@@ -150,7 +150,7 @@ if 'pin_table' in st.session_state:
 
     # Check if redirection to "SideAlloc" page is needed
     if "page" in st.session_state and st.session_state["page"] == "SideAlloc":
-        st.page_link("pages/side_allocation.py", label="SideAlloc")
+        st.page_link("pages/02_Side_Allocation.py", label="SideAlloc")
     else:
         print("Grouped Pin table displayed") 
         #st.write("Grouped Pin table displayed")           

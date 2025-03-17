@@ -8,8 +8,9 @@ import time
 st.set_page_config(page_icon= 'dados/logo_small.png', page_title= "SymbolGen" )
 
 st.page_link("interface.py", label="Extraction")
-st.page_link("pages/grouping_2.py", label="Grouping 2.0")
-st.page_link("pages/side_allocation.py", label="SideAlloc")
+st.page_link("pages/01_Grouping_2.py", label="Grouping 2.0")
+st.page_link("pages/02_Side_Allocation.py", label="SideAlloc")
+st.page_link("pages/03_Symbol_Parameters.py", label="Parameters")
 
 hide_st_style = """
             <style>
@@ -64,7 +65,7 @@ if st.session_state.input_buffer:
         st.session_state.pin_table = pin_table
 
         if "page" in st.session_state and st.session_state["page"] == "grouping":
-            st.page_link("pages/grouping_2.py", label="Grouping 2.0")
+            st.page_link("pages/01_Grouping_2.py", label="Grouping 2.0")
         else:
             st.write("Pin table displayed")
 
