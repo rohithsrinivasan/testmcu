@@ -287,16 +287,15 @@ def Dual_in_line_as_per_Renesas(df):
     return final_df
 
 def final_filter(df):
+    df = df.fillna("")
     # Remove leading/trailing whitespace and replace multiple spaces with single space
     df = df.applymap(lambda x: str(x).strip().replace('  ', ' '))
-    df = df.fillna("")
     # Remove newlines and convert to single word
     df = df.applymap(lambda x: x.replace('\n', ' ').replace(' ', '_'))
 
     if "Pin Designator" in df.columns:
         df["Pin Designator"] = df["Pin Designator"].apply(
             lambda x: int(float(x)) if isinstance(x, float) or (isinstance(x, str) and x.replace('.', '', 1).isdigit()) else x)
-
 
     return df
 

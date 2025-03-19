@@ -27,20 +27,41 @@ st.subheader("Grouping Page")
 if 'pin_table' in st.session_state:
     pin_table = st.session_state['pin_table']
 
-    if st.button("Clear Pin Table"):
-        del st.session_state['pin_table']
-        st.write("Pin table cleared.")
-   
+    col1, col2 = st.columns(2)
 
+    # Button 1: Clear Pin Table (Light Blue)
+    with col1:
+        if st.button("Clear Pin Table", type="secondary"):
+            del st.session_state['pin_table']
+            st.write("Pin table cleared.")
+            st.rerun()
+
+    # Button 2: Remove Electrical Type (Darker Blue)        
+    with col2:
+        if st.button("Remove Electrical Type", type="secondary"):
+            pin_table_without_type, electrical_type_removed = grouping_functions.remove_electrical_type(pin_table)
+            st.session_state['pin_table'] = pin_table_without_type 
+            st.session_state['electrical_type_removed'] = electrical_type_removed 
+
+    st.write (f"Part Number : **{st.session_state["part number"]}**")
     st.write("Pin Table:")
-    st.dataframe(pin_table)
-    before_grouping_flag, added_empty_grouping_column = grouping_functions.check_excel_format(pin_table)
+    st.dataframe(st.session_state['pin_table'])
     #st.text(f"Before Pin Grouping Flag :{before_grouping_flag}")
     #st.dataframe(added_empty_grouping_column)
-
     #mcu = st.checkbox("Use Algorithm (MCU) for grouping")
-    database = st.checkbox("Use database for grouping")
+    #database = st.checkbox("Use database for grouping")
     #llm_model = st.checkbox("Use hugging face model (trained)")
+
+    electrical_type_removed = "Electrical Type" not in st.session_state['pin_table'].columns
+    database_for_pin_type = False
+    database_for_grouping = False
+
+    if electrical_type_removed:
+        # Show this checkbox if "Electrical Type" is removed
+        database_for_pin_type = st.checkbox("Use database for pin type")
+    else:
+        # Show this checkbox if "Electrical Type" is present
+        database_for_grouping = st.checkbox("Use database for grouping")
 
     #if not any([database, llm_model]):
     #    st.info("Make a selection")
@@ -49,17 +70,28 @@ if 'pin_table' in st.session_state:
     #elif sum([database, llm_model]) > 1:
     #    st.info("Please only make a single selection")
     #    pin_grouping_table = pd.DataFrame()
+
+    json_paths = {
+        'Input': 'mcu_database/mcu_input.json',
+        'Power': 'mcu_database/mcu_power.json',
+        'Output': 'mcu_database/mcu_output.json',
+        'I/O': 'mcu_database/mcu_io.json',
+        'Passive': 'mcu_database/mcu_passive.json'
+    }
+
+    if database_for_pin_type:
+        st.warning("This feature is not fully developed.")
+        pin_table = st.session_state['pin_table']
+        before_pin_type_flag, added_empty_pin_type_column = grouping_functions.check_excel_format_for_type(pin_table)
+        pin_type_added_table = grouping_functions.assigning_pin_type_as_per_database(added_empty_pin_type_column, json_paths) 
+        st.dataframe(pin_type_added_table)
+        st.session_state['pin_table'] = pin_type_added_table
+        database_for_grouping = st.checkbox("Use database for grouping")
         
-    if database:
-
-        json_paths = {
-            'input': 'mcu_database/mcu_input.json',
-            'power': 'mcu_database/mcu_power.json',
-            'output': 'mcu_database/mcu_output.json',
-            'io': 'mcu_database/mcu_io.json',
-            'passive': 'mcu_database/mcu_passive.json'
-        }
-
+    if database_for_grouping:
+        st.success("Using database for grouping")
+        pin_table = st.session_state['pin_table']
+        before_grouping_flag, added_empty_grouping_column = grouping_functions.check_excel_format_for_grouping(pin_table)
         pin_grouping_table = grouping_functions.assigning_grouping_as_per_database(added_empty_grouping_column, json_paths)  
 
 
@@ -144,15 +176,15 @@ if 'pin_table' in st.session_state:
                 st.session_state['grouped_pin_table'] = pin_grouping_table 
 
     else:
-        st.info("Please select a method for grouping.")
+        st.info("Please the checkbox for using database")
         pin_grouping_table = pd.DataFrame()                            
 
 
     # Check if redirection to "SideAlloc" page is needed
     if "page" in st.session_state and st.session_state["page"] == "SideAlloc":
         st.page_link("pages/02_Side_Allocation.py", label="SideAlloc")
-    else:
-        print("Grouped Pin table displayed") 
+    #else:
+        #print("Grouped Pin table displayed") 
         #st.write("Grouped Pin table displayed")           
 
 else:
@@ -176,6 +208,7 @@ else:
 
         # Convert column names to lowercase for case-insensitive handling
         df.columns = df.columns.str.lower()
+        st.session_state["part number"] = df.loc[0, 'comment'] if 'comment' in df.columns else None
 
         # Define required column mappings
         column_mappings = {
@@ -201,12 +234,26 @@ else:
             df = df.rename(columns=new_column_names)
             warnings.append("Column names were adjusted due to mismatches.")
 
-        # Keep only required columns
         required_columns = ["Pin Designator", "Pin Display Name", "Electrical Type", "Pin Alternate Name"]
         df = df[[col for col in required_columns if col in df.columns]]
 
+        # Filter out rows where "Pin Alternate Name" contains "renesas"
         if "Pin Alternate Name" in df.columns:
             df = df[~df["Pin Alternate Name"].str.contains("renesas", case=False, na=False)]
+
+        # Always render the toggle switch
+        testing_electrical_type = st.toggle("Testing Electrical Type", value=False)
+
+        # If toggle is enabled and "Electrical Type" column exists, remove it
+        if testing_electrical_type and "Electrical Type" in df.columns:
+            df = df.drop(columns=["Electrical Type"])
+            st.write("'Electrical Type' column has been removed.")
+        elif "Electrical Type" not in df.columns:
+            st.write("'Electrical Type' column is not present in the DataFrame.")
+        else:
+            st.write("'Electrical Type' column is retained.")
+
+
 
         # Display warnings if any adjustments were made
         if warnings:

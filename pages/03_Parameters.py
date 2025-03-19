@@ -34,7 +34,7 @@ if "input_buffer" in st.session_state and "part_number" in st.session_state:
         st.write("Part number entered:", part_number)
 
         # Call the function to extract the parameter table
-        parameter_table = f.parameter_table_extraction_2(input_buffer)
+        parameter_table = f.parameter_table_extraction_2(input_buffer,part_number)
 
         # Display the extracted data
         #st.subheader("Extracted_parameter data")
@@ -43,9 +43,7 @@ if "input_buffer" in st.session_state and "part_number" in st.session_state:
 
         if len(transposed_table.columns) == 1:
             # If there are exactly 2 columns, rename them directly
-            transposed_table = transposed_table.rename(columns={
-                0: "Value"
-            })
+            transposed_table = transposed_table.rename(columns={0: "Value"})
         else:
             new_column_names = {i: f"Column {i+1}" for i in range(len(transposed_table.columns))}
             transposed_table = transposed_table.rename(columns=new_column_names)

@@ -8,7 +8,7 @@ import os
 from fuzzywuzzy import process
 import glob
 
-def check_excel_format(df):
+def check_excel_format_for_grouping(df):
   
   try:
     required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Grouping']
@@ -26,20 +26,39 @@ def check_excel_format(df):
     print(f"Error reading Excel file: {e}")
     return False, df 
   
+
+def check_excel_format_for_type(df):
+  
+  try:
+    required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name']
+
+    if set(required_columns) == set(df.columns):
+      return True, df
+    elif set(required_columns[:-1]) == set(df.columns):  # Check for missing 'Grouping' column
+      df['Electrical Type'] = ' '
+      #df.to_excel(excel_path, index=False)
+      return True, df
+    else:
+      print("Incorrect extraction format.")
+      return False, df
+  except Exception as e:
+    print(f"Error reading Excel file: {e}")
+    return False, df 
+  
 def assigning_grouping_as_per_database(old_df, json_paths):
     df = old_df.copy()
     
     try:
         # Load all JSON files
-        with open(json_paths['input'], 'r') as f:
+        with open(json_paths['Input'], 'r') as f:
             input_label_map = json.load(f)
-        with open(json_paths['power'], 'r') as f:
+        with open(json_paths['Power'], 'r') as f:
             power_label_map = json.load(f)
-        with open(json_paths['output'], 'r') as f:
+        with open(json_paths['Output'], 'r') as f:
             output_label_map = json.load(f)
-        with open(json_paths['io'], 'r') as f:
+        with open(json_paths['I/O'], 'r') as f:
             io_label_map = json.load(f)
-        with open(json_paths['passive'], 'r') as f:
+        with open(json_paths['Passive'], 'r') as f:
             passive_label_map = json.load(f)
 
         # Define a generic function to search for a label in all JSON files
@@ -73,6 +92,47 @@ def assigning_grouping_as_per_database(old_df, json_paths):
                 df.at[index, 'Grouping'] = label
 
         print("Labels assigned to Grouping column successfully.")
+
+    except Exception as e:
+        print(f"Error processing files: {e}")
+
+    return df
+
+def assigning_pin_type_as_per_database(old_df, json_paths):
+    df = old_df.copy()
+    
+    try:
+        # Load all JSON files
+        label_maps = {}
+        for key, path in json_paths.items():
+            with open(path, 'r') as f:
+                label_maps[key] = json.load(f)
+
+        # Define a function to find the file name (key) for a given pin name
+        def get_file_name(pin_name):
+            pin_name = pin_name.strip().replace(" ", "_")
+            matches = set()  # Use a set to store unique file names where the pin is found
+            
+            # Check each JSON file for the pin name
+            for file_name, label_map in label_maps.items():
+                for label, names in label_map.items():
+                    if pin_name in [item.strip() for item in names]:
+                        matches.add(file_name)  # Add the file name to the set
+            
+            # Handle conflicts (pin found in multiple JSON files)
+            if len(matches) > 1:
+                print(f"Conflict: Pin '{pin_name}' found in multiple files: {matches}. Assigning 'NAss'.")
+                return "XX"
+            elif len(matches) == 1:
+                return matches.pop()  # Return the file name where the pin was found
+            else:
+                print(f"Warning: Pin '{pin_name}' not found in any JSON file. Assigning 'NAv'.")
+                return "X"
+
+        # Apply the function to assign file names based on Pin Display Name
+        df['Electrical Type'] = df['Pin Display Name'].apply(get_file_name)
+
+        print("File names assigned to Grouping column successfully.")
 
     except Exception as e:
         print(f"Error processing files: {e}")
@@ -159,4 +219,26 @@ def load_json_files_with_type_labels(directory):
 def save_json_file(file_path, data):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
+
+def remove_electrical_type(df):
+    columns_removed = []
+    
+    # Remove "Electrical Type" column if it exists
+    if "Electrical Type" in df.columns:
+        df = df.drop(columns=["Electrical Type"])
+        columns_removed.append("Electrical Type")
+        print("'Electrical Type' column has been removed.")
+    else:
+        print("'Electrical Type' column is not present in the DataFrame.")
+    
+    # Remove "Grouping" column if it exists
+    if "Grouping" in df.columns:
+        df = df.drop(columns=["Grouping"])
+        columns_removed.append("Grouping")
+        print("'Grouping' column has been removed.")
+    else:
+        print("'Grouping' column is not present in the DataFrame.")
+    
+    # Return the updated DataFrame and a flag indicating if any columns were removed
+    return df, False
    

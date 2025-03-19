@@ -136,7 +136,7 @@ def create_navigation_button(dataframe):
 
 #######################################################################
 
-def parameter_table_extraction_2(input_buffer):
+'''def parameter_table_extraction_2(input_buffer):
 
   with pdfplumber.open(input_buffer) as pdf:
     page_numbers = find_page_range(pdf, "Symbol Parameters", "Footprint Design Information")
@@ -151,6 +151,52 @@ def parameter_table_extraction_2(input_buffer):
         final_table = remove_rows_with_more_empty_values(merged_table)
         st.table(merged_table)
         return final_table
+      else:
+        st.write("No tables found in the specified pages.")
+    else:
+      st.write("Page with 'Symbol Parameters' not found.")
+
+  return None
+'''
+
+
+def parameter_table_extraction_2(input_buffer,part_number):
+
+  with pdfplumber.open(input_buffer) as pdf:
+    page_numbers = find_page_range(pdf, "Symbol Parameters", "Footprint Design Information")
+
+    if page_numbers:
+      st.write(f"Pages containing 'Symbol Parameters' to 'Footprint Design Information': {page_numbers}")
+      parameter_tables = extract_tables_in_these_pages(input_buffer, page_numbers)
+      st.table(parameter_tables)
+
+      #if parameter_tables:
+      #  merged_table = merge_parameter_tables(parameter_tables)
+
+
+      if parameter_tables:
+          # Convert all tables to Pandas DataFrames (if they aren't already)
+          parameter_tables = [pd.DataFrame(table) for table in parameter_tables]
+
+          # Check if all tables are of the same size
+          table_shapes = [table.shape for table in parameter_tables]  # Get the shape (rows, columns) of each table
+          if all(shape == table_shapes[0] for shape in table_shapes):
+              # If all tables are of the same size, merge them
+              merged_table = merge_parameter_tables(parameter_tables)
+              final_table = remove_rows_with_more_empty_values(merged_table)
+              st.text("Debug Table")
+              st.table(final_table)
+              return final_table
+          else:
+              # If tables are not of the same size, find the table with the `part_number` string
+              part_number_table = None
+              for table in parameter_tables:
+                  if table.astype(str).apply(lambda row: row.str.contains(part_number).any(), axis=1).any():
+                      merged_table = table
+                      final_table = remove_rows_with_more_empty_values(merged_table)
+                      st.text("debug Table")
+                      st.table(final_table)
+                      return final_table
       else:
         st.write("No tables found in the specified pages.")
     else:
@@ -211,9 +257,24 @@ def merge_parameter_tables(tables):
     df = pd.DataFrame(merged_table[1:], columns=merged_table[0])
     return df
 
-def remove_rows_with_more_empty_values(df, threshold=8):
+'''def remove_rows_with_more_empty_values(df, threshold=8):
   empty_counts = df.isnull().sum(axis=1)
 
   # Filter rows with more empty values than the threshold
   filtered_df = df[empty_counts <= threshold]
-  return filtered_df
+  return filtered_df'''
+
+def remove_rows_with_more_empty_values(df, threshold=8):
+    # Check if column names are numeric (e.g., 0, 1, 2, ...)
+    if all(isinstance(col, int) for col in df.columns):
+        # Replace column names with the first row
+        df.columns = df.iloc[0]
+        # Drop the first row (since it's now the column names)
+        df = df.drop(df.index[0]).reset_index(drop=True)
+
+    # Count the number of missing values in each row
+    empty_counts = df.isnull().sum(axis=1)
+
+    # Filter rows with more empty values than the threshold
+    filtered_df = df[empty_counts <= threshold]
+    return filtered_df
