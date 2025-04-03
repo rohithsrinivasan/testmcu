@@ -160,6 +160,17 @@
         "ET1_COL",
         "ET1_CRS"
     ],
+
+    "JTAG_Interface":[
+        "JTAG_TCK",
+        "JTAG_TDI",
+        "JTAG_TRST_N",
+        "DCUTCK",
+        "DCUTDI",
+        "DCUTMS",
+        "DCUTRSTN#"
+
+    ],
     "External_Clock": [
         "EMEXTAL",
         "EXCIN",
@@ -276,6 +287,8 @@
         "MODE1",
         "MODE2",
         "MPMD",
+        "FLMODE",
+        "FLMD",
         "PWCTEST1",
         "PWTEST",
         "RETEST0",
@@ -303,9 +316,6 @@
         "DETCK",
         "DETDI",
         "DETRSTN#",
-        "JTAG_TCK",
-        "JTAG_TDI",
-        "JTAG_TRST_N",
         "OC_EN",
         "PLLCAP",
         "PLLCAP1",
@@ -507,7 +517,7 @@
         "nRST"
     ],
 
-    "ADC0_Channels": [
+    "ADC0_Channel": [
         "ADC0I0",
         "ADC0I1", 
         "ADC0I2", 
@@ -521,7 +531,34 @@
         "ADC0I14", 
         "ADC0I15"
     ],
-    "ADC1_Channels": [
+
+    "ADC0_Channel_Group_0": [
+        "ADCC0I00", 
+        "ADCC0I01", 
+        "ADCC0I02", 
+        "ADCC0I03"
+    ],
+    "ADC0_Channel_Group_1": [
+        "ADCC0I10", 
+        "ADCC0I11", 
+        "ADCC0I12", 
+        "ADCC0I13"
+    ],
+    "ADC0_Channel_Group_2": [
+        "ADCC0I20", 
+        "ADCC0I21", 
+        "ADCC0I22", 
+        "ADCC0I23"
+    ],
+    "ADC0_Channel_Group_3": [
+        "ADCC0I30", 
+        "ADCC0I31", 
+        "ADCC0I32", 
+        "ADCC0I33"
+    ],
+
+
+    "ADC1_Channel": [
         "ADC1_IN0", 
         "ADC1_IN1", 
         "ADC1_IN2", 
@@ -531,7 +568,33 @@
         "ADC1_IN7", 
         "ADC1_IN8"
     ],
-    "ADC2_Channels": [
+
+    "ADC1_Channel_Group_0": [
+        "ADCC1I00", 
+        "ADCC1I01", 
+        "ADCC1I02", 
+        "ADCC1I03"
+    ],
+    "ADC1_Channel_Group_1": [
+        "ADCC1I10", 
+        "ADCC1I11", 
+        "ADCC1I12", 
+        "ADCC1I13"
+    ],
+    "ADC1_Channel_Group_2": [
+        "ADCC1I20", 
+        "ADCC1I21", 
+        "ADCC1I22", 
+        "ADCC1I23"
+    ],
+    "ADC1_Channel_Group_3": [
+        "ADCC1I30", 
+        "ADCC1I31", 
+        "ADCC1I32", 
+        "ADCC1I33"
+    ],
+
+    "ADC2_Channel": [
         "ADC2_IN0", 
         "ADC2_IN1", 
         "ADC2_IN2", 
@@ -541,7 +604,32 @@
         "ADC2_IN7", 
         "ADC2_IN8"
     ],
-    "Generic_ADC_Channels": [
+
+    "ADC2_Channel_Group_0": [
+        "ADCC2I00", 
+        "ADCC2I01", 
+        "ADCC2I02", 
+        "ADCC2I03"
+    ],
+    "ADC2_Channel_Group_1": [
+        "ADCC2I10", 
+        "ADCC2I11", 
+        "ADCC2I12", 
+        "ADCC2I13"
+    ],
+    "ADC2_Channel_Group_2": [
+        "ADCC2I20", 
+        "ADCC2I21", 
+        "ADCC2I22", 
+        "ADCC2I23"
+    ],
+    "ADC2_Channel_Group_3": [
+        "ADCC2I30", 
+        "ADCC2I31", 
+        "ADCC2I32", 
+        "ADCC2I33"
+    ],
+    "Generic_ADC_Channel": [
         "ADC_CH0", 
         "ADC_CH1", 
         "ADC_CH2", 
@@ -697,5 +785,28 @@
         "UVBUS",
         "\\USB1_ovr_CURRENT",
         "\\USB2_ovr_CURRENT"
+    ],
+
+    "Data Bus":[
+        "AUDCK"
+    ],
+
+    "RDC_Interface_RDC3A0": [
+        "RDC3A0S1",
+        "RDC3A0S2", 
+        "RDC3A0S3", 
+        "RDC3A0S4",
+        "RDC3A0COM",
+        "RDC3A0RSO"
+    ],
+      
+      "RDC_Interface_RDC3A1": [
+        "RDC3A1S1", 
+        "RDC3A1S2", 
+        "RDC3A1S3", 
+        "RDC3A1S4",
+        "RDC3A1COM",
+        "RDC3A1RSO"
     ]
+
 }

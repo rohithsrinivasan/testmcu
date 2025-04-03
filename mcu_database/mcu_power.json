@@ -1,6 +1,8 @@
 {
     "Analog Power Supply Negative": [
         "VSS",
+        "AOVSS",
+        "AVSS0",
         "ADAVSS18",
         "AVSS",
         "AVSS0",
@@ -83,12 +85,16 @@
         "A7VSS",
         "A8VSS",
         "A9VSS",
-        "A10VSS"
+        "A10VSS",
+        "RVSS",
+        "A0VSS"
 
     ],
 
     "Analog Power Supply Negative No Connect": [
         "A0VSS(N.C.)",
+        "A1VSS(N.C.)",
+        "A2VSS(N.C.)",
         "AVSS(N.C.)",
         "AVss(N.C.)",
         "AVSS0(N.C.)",
@@ -99,7 +105,6 @@
         "VSS0(N.C.)",
         "VSS1(N.C.)",
         "VSS2(N.C.)"
-
     ],
 
 
@@ -311,6 +316,7 @@
         "B5VCC",
         "CVCC",
         "DRVCC",
+        "RVCC",
         "DRVCC(VCCQ)",
         "DSI_VDD0P8",
         "DSI_VDD12",
@@ -676,6 +682,11 @@
     ],
     "Reference Voltage High Positive": [
         "A0VREFH",
+        "A1VREFH",
+        "A2VREFH",
+        "A3VREFH",
+        "A4VREFH",
+        "A5VREFH",
         "AVREFH",
         "AVrefh",
         "VREFH",

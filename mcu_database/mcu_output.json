@@ -211,10 +211,11 @@
         "XTAL32Mm",
         "XTAL32Mp"
     ],
-    "On_Chip_Oscillator": [
+    "JTAG_Interface": [
         "DETDO",
         "JTAG_TDO",
-        "TDO"
+        "TDO",
+        "DCUTDO"
     ],
     "Other_Output": [
         "AMP0O",
