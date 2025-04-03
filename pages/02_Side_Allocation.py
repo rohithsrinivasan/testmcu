@@ -51,7 +51,7 @@ if 'grouped_pin_table' in st.session_state:
     #st.text(f"Before Side Allocation Flag :{before_side_flag}")
     #st.dataframe(added_empty_side_column)
 
-    if len(added_empty_side_column) < 80:
+    if len(added_empty_side_column) <= 80:
         side_added = SideAllocation_functions.assigning_side_for_priority(added_empty_side_column)
         #st.text(f"Side Column Added")
         #st.dataframe(side_added)
@@ -113,6 +113,8 @@ if 'grouped_pin_table' in st.session_state:
 
         # Assuming `grouping_changed` is a dictionary of DataFrames
         elif isinstance(grouping_changed, dict):
+
+            grouping_changed = {k: v for k, v in grouping_changed.items() if not v.empty}
 
             for key in grouping_changed:
                 df = grouping_changed[key].copy()  # Create a copy of the DataFrame

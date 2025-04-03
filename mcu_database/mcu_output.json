@@ -1,8 +1,5 @@
 {
-    "Audio_Clock": [
-        "AUDIO_CLKOUT",
-        "AUDIO_X2"
-    ],
+
     "Common_Output": [
         "COM0",
         "COM1",
@@ -54,6 +51,15 @@
         "\\DDR_RAS",
         "\\DDR_WE"
     ],
+
+    "Error_Output": [
+        "ERROROUT",
+        "ERROROUT#",
+        "ERROROUTZ",
+        "\\ERROROUT_M"
+    ],
+
+
     "Ethernet_Interface_Output": [
         "ET0_MDC",
         "ET0_TXCTL_TXEN",
@@ -281,8 +287,6 @@
         "DU0_DR5",
         "DU0_DR6",
         "DU0_DR7",
-        "ERROROUT#",
-        "ERROROUTZ",
         "EX_CS0#",
         "EX_CS1#",
         "EX_CS2#",

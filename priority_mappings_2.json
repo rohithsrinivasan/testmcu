@@ -44,6 +44,7 @@
       "Analog Power Supply Negetive Programmable Gain Amp": "ZAG_Analog Power Supply Negetive Programmable Gain Amp",
       "Analog Power Supply Negetive PLL": "ZAH_Analog Power Supply Negetive PLL",
       "Analog Power Supply Negetive Video Decoder": "ZAI_Analog Power Supply Negetive Video Decoder",
+      "Analog Power Supply Negative No Connect" : "ZAJ_Analog Power Supply Negative No Connect",
       "DDR Power Supply Negative": "ZB_DDR Power Supply Negative",
       "USB Power Supply Negative": "ZU_USB Power Supply Negative",
       "RF Power Supply Negative": "ZV_RF Power Supply Negative",
@@ -61,11 +62,21 @@
       "Standby": "EB_Standby",
       "Ethernet_Interface": "EB_Ethernet_Interface",
       "DREQ": "ED_DREQ",
+      "Audio_Pins": "EE_Audio_Pins",
       "CAN_Interface": "FA_CAN_Interface",
       "USB_Interface": "FB_USB_Interface",
       "Boot_Config": "FC_Boot_Config",
+      "ADC0_Channel": "FDA_ADC0_Channel",
+      "ADC1_Channels" : "FDB_ADC1_Channels",
+      "ADC2_Channels" : "FDC_ADC2_Channels",
+      "Generic_ADC_Channels" : "FDD_Generic_ADC_Channels",
+      "Analog_Inputs_AIN" : "FEA_Analog_Inputs_AIN",
+      "Analog_Inputs_ANI" : "FEB_Analog_Inputs_ANI",
+      "Analog_Inputs_ANI_Indexed" : "FEC_Analog_Inputs_ANI_Indexed",
+      "Analog_Inputs_ANIN_ANIP" : "FED_Analog_Inputs_ANIN_ANIP",
+      "Analog_Inputs_AN_Array" : "FEE_Analog_Inputs_AN_Array",
+      "High_Voltage_Analog_Inputs" : "FEF_High_Voltage_Analog_Inputs",
       "Other_Input": "GA_Other_Input",
-      "P+ Analog": "GB_P+ Analog",
       "General_IO": "GC_General_IO",
 
 
@@ -92,7 +103,6 @@
       "Common_Output": "SC_Common_Output",
       "Ethernet_Interface_Output": "SF_Ethernet_Interface_Output",
       "DDR_Interface_Output": "SG_DDR_Interface_Output",
-      "Audio_Clock": "SH_Audio_Clock",
       "LED_Output": "SI_LED_Output",
       "SD_Interface_Output": "SJ_SD_Interface_Output",
       "QSPI_Interface_Output": "SK_QSPI_Interface_Output",
@@ -109,7 +119,10 @@
       "External_Clock": "CB_External_Clocks/Oscillators",
       "Clock_Capacitor": "CC_External_Capacitive_Clocks/Oscillators",
       "Reference_Clk": "CD_Reference_Clocks/Oscillators",
-      "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators"
+      "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators",
+      "PCIe_Reference_Clocks" : "FFA_PCIe_Reference_Clocks",
+      "Generic_Reference_Clocks" : "FFB_Generic_Reference_Clocks"
+
     },
     "swap_conditions": {
       "X1": "CA_Main_Clocks/Oscillators",
