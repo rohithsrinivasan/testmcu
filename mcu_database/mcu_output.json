@@ -8,19 +8,66 @@
         "COM4",
         "COM5",
         "COM6",
-        "COM7",
-        "OUT0",
-        "OUT1",
-        "OUT2",
-        "OUT3",
-        "OUT4",
-        "OUT5",
-        "OUT6",
-        "OUT7",
-        "OUT8",
-        "OUT9",
-        "OUT10"
+        "COM7"
     ],
+
+    "General_Output_Differential_pair_OUT0":[
+        "OUT0",
+        "nOUT0"
+    ],
+    "General_Output_Differential_pair_OUT1":[
+        "OUT1",
+        "nOUT1"
+    ],
+    "General_Output_Differential_pair_OUT2":[
+        "OUT2",
+        "nOUT2"
+    ],
+    "General_Output_Differential_pair_OUT3":[
+        "OUT3",
+        "nOUT3"
+    ],
+    "General_Output_Differential_pair_OUT4":[
+        "OUT4",
+        "nOUT4"
+    ],
+    "General_Output_Differential_pair_OUT5":[
+        "OUT5",
+        "nOUT5"
+    ],
+    "General_Output_Differential_pair_OUT6":[
+        "OUT6",
+        "nOUT6"
+    ],
+    "General_Output_Differential_pair_OUT7":[
+        "OUT7",
+        "nOUT7"
+    ],
+    "General_Output_Differential_pair_OUT8":[
+        "OUT8",
+        "nOUT8"
+    ],
+    "General_Output_Differential_pair_OUT9":[
+        "OUT9",
+        "nOUT9"
+    ],
+    "General_Output_Differential_pair_OUT10":[
+        "OUT10",
+        "nOUT10"
+    ],
+    "General_Output_Differential_pair_OUT11":[
+        "OUT11",
+        "nOUT11"
+    ],
+    "General_Output_Differential_pair_OUT12":[
+        "OUT12",
+        "nOUT12"
+    ],
+    "General_Output_Differential_pair_OUT13":[
+        "OUT13",
+        "nOUT13"
+    ],    
+
     "DDR_Interface_Output": [
         "DDR_ADDR0",
         "DDR_ADDR1",

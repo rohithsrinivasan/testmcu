@@ -467,6 +467,7 @@
         "XSPI_PVDD",
         "ZPDVCC",
         "VDDO",
+        "VDDO0",
         "VDDO1",
         "VDDO2",
         "VDDO3",
@@ -476,7 +477,16 @@
         "VDDO7",
         "VDDO8",
         "VDDO9",
-        "VDDO10"
+        "VDDO10",
+        "VDD_VCO",
+        "VDD_FAN",
+        "VDDXO_DCD",
+        "VDD_DIG",
+        "VDD_CLK",
+        "VDD_PLL",
+        "VDD_REP",
+        "VDD_TSU",
+        "VDD_FOD1"
     ],
     "Digital Power Supply Positive CSI": [
         "CSI0_MSVDD0P8",

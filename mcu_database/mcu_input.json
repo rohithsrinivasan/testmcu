@@ -144,7 +144,15 @@
         "CSI_DATA2_P",
         "CSI_DATA3_N",
         "CSI_DATA3_P",
-        "XSPI0_ECS0N"
+        "XSPI0_ECS0N",
+        "CS",
+        "CS0",
+        "CS1",
+        "CS2",
+        "CS3",
+        "CS4",
+        "CS5",
+        "nCS_A0"
     ],
     "DREQ": [
         "DREQ0",
@@ -229,7 +237,8 @@
         "XSPI0_INT0N",
         "\\IRL3",
         "\\NMI",
-        "\\QSPI_INT"
+        "\\QSPI_INT",
+        "nMR"
     ],
     "Main_Clock": [
         "CLK",
@@ -249,6 +258,28 @@
         "X1[CL1]",
         "X2[CL2]"
     ],
+
+    "Clock_Diffierential_pair_0":[
+        "CLKIN0",
+        "nCLKIN0"
+    ],
+    "Clock_Diffierential_pair_1":[
+        "CLKIN1",
+        "nCLKIN1"
+    ],
+    "Clock_Diffierential_pair_2":[
+        "CLKIN2",
+        "nCLKIN2"
+    ],
+    "Clock_Diffierential_pair_3":[
+        "CLKIN3",
+        "nCLKIN3"
+    ],
+    "Clock_Diffierential_pair_4":[
+        "CLKIN4",
+        "nCLKIN4"
+    ],
+
     "Mode": [
         "ASEMD",
         "ASEMD#",
