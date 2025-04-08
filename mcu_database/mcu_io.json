@@ -699,7 +699,11 @@
         "SDA1",
         "SDA_SDIO",
         "SCL_SCLK",
-        "SDO_A"
+        "SDO_A",
+        "SDO_A1",
+        "SDO_B",
+        "SDO_C"
+
 
     ],
     "Miscelleneous_IO_Pins": [

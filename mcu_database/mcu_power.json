@@ -492,6 +492,7 @@
 
 
     "Digital Power Supply Fault Override": [
+        "VDD_FOD0",
         "VDD_FOD1",
         "VDD_FOD2",
         "VDD_FOD3",
