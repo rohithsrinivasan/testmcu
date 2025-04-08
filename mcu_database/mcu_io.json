@@ -2434,5 +2434,23 @@
         "USB_DP",
         "USB_DP1",
         "USB_DP2"
+    ],
+    "RDC_Interface_RDC3A0": [
+        "RDC3A0S1",
+        "RDC3A0S2", 
+        "RDC3A0S3", 
+        "RDC3A0S4",
+        "RDC3A0COM",
+        "RDC3A0RSO"
+    ],
+      
+      "RDC_Interface_RDC3A1": [
+        "RDC3A1S1", 
+        "RDC3A1S2", 
+        "RDC3A1S3", 
+        "RDC3A1S4",
+        "RDC3A1COM",
+        "RDC3A1RSO"
     ]
+
 }

@@ -87,10 +87,9 @@
         "A9VSS",
         "A10VSS",
         "RVSS",
-        "A0VSS"
-
+        "A0VSS",
+        "OSCVSS"
     ],
-
     "Analog Power Supply Negative No Connect": [
         "A0VSS(N.C.)",
         "A1VSS(N.C.)",
@@ -106,8 +105,6 @@
         "VSS1(N.C.)",
         "VSS2(N.C.)"
     ],
-
-
     "Analog Power Supply Negative ADC": [
         "ADC1_AGND",
         "ADC2_AGND",
@@ -278,7 +275,7 @@
         "A7VCC",
         "A8VCC",
         "A9VCC",
-        "A10VCC"
+        "A10VCC"        
     ],
     "Common Ground": [
         "GND",
@@ -468,7 +465,18 @@
         "Vcc2",
         "VccQ",
         "XSPI_PVDD",
-        "ZPDVCC"
+        "ZPDVCC",
+        "VDDO",
+        "VDDO1",
+        "VDDO2",
+        "VDDO3",
+        "VDDO4",
+        "VDDO5",
+        "VDDO6",
+        "VDDO7",
+        "VDDO8",
+        "VDDO9",
+        "VDDO10"
     ],
     "Digital Power Supply Positive CSI": [
         "CSI0_MSVDD0P8",
@@ -597,7 +605,6 @@
         "VDD1833_PRE18_JTAG"
     ],
     "Miscellaneous Power": [
-
         "ABG_NCP_OUT",
         "AG",
         "ANDSSG",

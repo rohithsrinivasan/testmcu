@@ -124,7 +124,8 @@
       "PCIe_Interface_Output": "SL_PCIe_Interface_Output",
       "USB_Interface_Output": "SM_USB_Interface_Output",
       "GPIO_Output": "SN_GPIO_Output",
-      "Other_Output": "SO_Other_Output"
+      "Other_Output": "SO_Other_Output",
+      "Error_Output" : "SP_Error_Output"
 
 
 
