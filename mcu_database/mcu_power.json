@@ -478,6 +478,8 @@
         "VDDO8",
         "VDDO9",
         "VDDO10",
+        "VDDO11",
+        "VDDO12",
         "VDD_VCO",
         "VDD_FAN",
         "VDDXO_DCD",
@@ -485,8 +487,15 @@
         "VDD_CLK",
         "VDD_PLL",
         "VDD_REP",
-        "VDD_TSU",
-        "VDD_FOD1"
+        "VDD_TSU"
+    ],
+
+
+    "Digital Power Supply Fault Override": [
+        "VDD_FOD1",
+        "VDD_FOD2",
+        "VDD_FOD3",
+        "VDD_FOD4"
     ],
     "Digital Power Supply Positive CSI": [
         "CSI0_MSVDD0P8",

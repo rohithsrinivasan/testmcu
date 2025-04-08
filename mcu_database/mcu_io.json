@@ -696,7 +696,11 @@
         "SCL1",
         "SDA",
         "SDA0",
-        "SDA1"
+        "SDA1",
+        "SDA_SDIO",
+        "SCL_SCLK",
+        "SDO_A"
+
     ],
     "Miscelleneous_IO_Pins": [
         "AFE_HC1",

@@ -20,6 +20,7 @@
       "Digital Power Supply Positive CSI": "AGJ_Digital Power Supply Positive CSI",
       "Digital Power Supply Positive REGMII": "AGK_Digital Power Supply Positive REGMII",
       "Digital Power Supply Positive UP+": "AGL_Digital Power Supply Positive UP+",
+      "Digital Power Supply Fault Override": "AGM_Digital Power Supply Fault Override",
       "DDR Power Supply Positive": "AH_DDR Power Supply Positive",
       "JTAG Power Positive": "AJ_JTAG Power Positive",
       "PCIe VCC Power": "AK_PCIe VCC Power",
