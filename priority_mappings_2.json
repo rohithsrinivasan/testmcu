@@ -146,7 +146,12 @@
       "Reference_Clk": "CD_Reference_Clocks/Oscillators",
       "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators",
       "PCIe_Reference_Clocks" : "FFA_PCIe_Reference_Clocks",
-      "Generic_Reference_Clocks" : "FFB_Generic_Reference_Clocks"
+      "Generic_Reference_Clocks" : "FFB_Generic_Reference_Clocks",
+      "Clock_Diffierential_pair_0" : "CDA_Clock_Diffierential_pair_0",
+      "Clock_Diffierential_pair_1" : "CDB_Clock_Diffierential_pair_1",
+      "Clock_Diffierential_pair_2" : "CDC_Clock_Diffierential_pair_2",
+      "Clock_Diffierential_pair_3" : "CDD_Clock_Diffierential_pair_3",
+      "Clock_Diffierential_pair_4" : "CDE_Clock_Diffierential_pair_4"
 
     },
     "swap_conditions": {
