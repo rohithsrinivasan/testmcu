@@ -43,7 +43,12 @@ if 'pin_table' in st.session_state:
             st.session_state['pin_table'] = pin_table_without_type 
             st.session_state['electrical_type_removed'] = electrical_type_removed 
 
-    st.write (f"Part Number : **{st.session_state["part number"]}**")
+    part_number = st.session_state["part number"]
+    if part_number is None:
+        st.session_state["part number"] = st.session_state["uploaded_csv_name"]
+        part_number = st.session_state["uploaded_csv_name"]
+    # Display the part number
+    st.write (f"Part Number : **{part_number}**")
     st.write("Pin Table:")
     st.dataframe(st.session_state['pin_table'])
     #st.text(f"Before Pin Grouping Flag :{before_grouping_flag}")
