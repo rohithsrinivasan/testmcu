@@ -24,4 +24,4 @@ COPY . .
 # Verify Java installation
 RUN java -version
 
-CMD ["streamlit", "run", "app.py", "--server.port=$PORT", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "interface.py", "--server.port=$PORT", "--server.address=0.0.0.0"]
