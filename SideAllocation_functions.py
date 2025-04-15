@@ -169,60 +169,44 @@ def assigning_descending_order_for_similar_group(df):
     descending_order_df.reset_index(drop=True, inplace=True)
     return descending_order_df'''
 
-'''def assigning_ascending_order_for_similar_group(df):
+def assigning_ascending_order_for_similar_group(df):
     df_copy = df.copy()
     
-    # Extract numeric part after '_' for sorting
-    ascending_order_df = df_copy.groupby('Priority').apply(
-        lambda group: group.assign(
-            sort_key=group['Pin Display Name'].str.extract('_(\d+)$').astype(float)
-        ).sort_values('sort_key', ascending=True)
-    ).drop(columns=['sort_key'])
+    # Check each group for all-having-numeric-suffixes
+    def custom_sort(group):
+        # Test if ALL pin names in this group have numeric suffixes
+        all_have_suffix = group['Pin Display Name'].str.contains(r'_\d+$').all()
+        
+        if all_have_suffix:
+            # Extract numeric suffixes for sorting
+            group['sort_key'] = group['Pin Display Name'].str.extract(r'_(\d+)$').astype(int)
+            group = group.sort_values('sort_key').drop(columns=['sort_key'])
+        else:
+            # Default alphabetical sort
+            group = group.sort_values('Pin Display Name')
+            
+        return group
     
+    ascending_order_df = df_copy.groupby('Priority', group_keys=False).apply(custom_sort)
     ascending_order_df.reset_index(drop=True, inplace=True)
     return ascending_order_df
 
 def assigning_descending_order_for_similar_group(df):
     df_copy = df.copy()
     
-    # Extract numeric part after '_' for sorting
-    descending_order_df = df_copy.groupby('Priority').apply(
-        lambda group: group.assign(
-            sort_key=group['Pin Display Name'].str.extract('_(\d+)$').astype(float)
-        ).sort_values('sort_key', ascending=False)
-    ).drop(columns=['sort_key'])
+    def custom_sort(group):
+        all_have_suffix = group['Pin Display Name'].str.contains(r'_\d+$').all()
+        
+        if all_have_suffix:
+            group['sort_key'] = group['Pin Display Name'].str.extract(r'_(\d+)$').astype(int)
+            group = group.sort_values('sort_key', ascending=False).drop(columns=['sort_key'])
+        else:
+            group = group.sort_values('Pin Display Name', ascending=False)
+            
+        return group
     
+    descending_order_df = df_copy.groupby('Priority', group_keys=False).apply(custom_sort)
     descending_order_df.reset_index(drop=True, inplace=True)
-    return descending_order_df'''
-
-def assigning_ascending_order_for_similar_group(df):
-    df_copy = df.copy()
-    
-    # Create sort key first (more efficient than doing it in each group)
-    df_copy['sort_key'] = df_copy['Pin Display Name'].str.extract(r'_(\d+)$').astype(float)
-    
-    # Sort by Priority (grouping) and sort_key (ascending)
-    ascending_order_df = (
-        df_copy.sort_values(['Priority', 'sort_key'], ascending=[True, True])
-        .drop(columns=['sort_key'])
-        .reset_index(drop=True)
-    )
-    
-    return ascending_order_df
-
-def assigning_descending_order_for_similar_group(df):
-    df_copy = df.copy()
-    
-    # Create sort key first
-    df_copy['sort_key'] = df_copy['Pin Display Name'].str.extract(r'_(\d+)$').astype(float)
-    
-    # Sort by Priority (grouping) and sort_key (descending)
-    descending_order_df = (
-        df_copy.sort_values(['Priority', 'sort_key'], ascending=[True, False])
-        .drop(columns=['sort_key'])
-        .reset_index(drop=True)
-    )
-    
     return descending_order_df
 
 
