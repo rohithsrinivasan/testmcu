@@ -44,51 +44,79 @@ def check_excel_format(df, required_columns, additional_column):
 ########################################################################################
 
 # Load the JSON file with priority mappings
-with open('priority_mappings_2.json', 'r') as file:
-    mappings = json.load(file)
 
-def priority_order(row, df):
+def priority_order(row, df, priority_mapping_json):
+    with open(priority_mapping_json, 'r') as file:
+        mappings = json.load(file)
+
     value = row['Grouping']
-    index = row.name  # Get the row's index
+    index = row.name
     value_alternative = row['Pin Alternate Name']
 
-    # Direct mapping based on value
+    # Debug check (optional)
+    if (row['Electrical Type'] == 'Input' and value.strip().startswith("Port")):
+        print(f"After Swapping : {value}, Alt Name: {value_alternative}")
+
+    # 1. Highest priority: Direct mapping
     if value in mappings['priority_map']:
         return mappings['priority_map'][value]
     
-    # Clock-related cases
+    # 2. Clock-related cases
     for clock_type, priority in mappings['clock_map'].items():
         if clock_type in value:
             return priority
     
-    # Port handling
-    if value.startswith("Port"):
+    # 3. Input + Port check (MUST COME BEFORE GENERIC PORT HANDLING!)
+    if row['Electrical Type'] == 'Input' and value.strip().startswith("Port"):
+        for alt_name, priority in mappings['swap_conditions'].items():
+            if alt_name in value_alternative:
+                # --- Define swap function OUTSIDE the loop ---
+                swap_pins_for_that_row(df, index, mappings['swap_conditions'])
+                return priority
+        return "ZZ_Not_Assigned"  # Default if no swap condition matches
+    
+    # 4. Generic Port handling (now only for non-Input cases)
+    if value.strip().startswith("Port"):
         try:
             port_number = int(value.split(' ')[1])
             return f"P_Port {port_number:02d}"
         except ValueError:
             return f"P_Port {value.split(' ')[1]}"
-
-    # Port-specific checks for Input type
-    if row['Electrical Type'] == 'Input' and value.startswith("Port"):
-        for alt_name, priority in mappings['swap_conditions'].items():
-            if alt_name in value_alternative:
-                swap_pins_for_that_row(df, index)
-                return priority
-
-        return "ZZ_Not_Assigned"
     
-    # Default case
+    # 5. Default case
     return None
 
+def swap_pins_for_that_row(df, index, swap_conditions):
+    current_display = df.loc[index, 'Pin Display Name']
+    current_alternate = df.loc[index, 'Pin Alternate Name']
+    
+    # Find which swap_condition key is present in the alternate name
+    for key in swap_conditions.keys():
+        if key in current_alternate:
+            # Extract the matching part (e.g., "X1" from "P121/X1/INTP1")
+            matched_part = key
+            
+            # Swap ONLY the matched part with display name
+            new_alternate = current_alternate.replace(matched_part, current_display)
+            new_display = matched_part
+            
+            df.loc[index, 'Pin Display Name'] = new_display
+            df.loc[index, 'Pin Alternate Name'] = new_alternate
+            return
 
-def swap_pins_for_that_row(df, index):
-    df.loc[index, 'Pin Display Name'], df.loc[index, 'Pin Alternate Name'] = df.loc[index, 'Pin Alternate Name'], df.loc[index, 'Pin Display Name']
-    return
 
-def assigning_priority_for_group(df):
+
+def assigning_priority_for_group(df,priority_mapping_json):
+
+    #pd.set_option('display.max_rows', None)  # Show all rows
+    #pd.set_option('display.max_columns', None)  # Show all columns
+    #pd.set_option('display.width', None)  # Auto-detect terminal width
+    #pd.set_option('display.max_colwidth', None) 
+
+    #print(f"Before Priority mapping :\n {df}")
     df_copy = df.copy()  
-    df_copy['Priority'] = df_copy.apply(lambda row: priority_order(row, df_copy), axis=1)
+    df_copy['Priority'] = df_copy.apply(lambda row: priority_order(row, df_copy,priority_mapping_json), axis=1)
+    #print(f"After Priority mapping :\n {df_copy}")
     return df_copy
 
 #################################################################

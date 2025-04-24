@@ -41,7 +41,8 @@ if 'grouped_pin_table' in st.session_state:
     before_priority_flag, added_empty_priority_column = SideAllocation_functions.check_excel_format(grouped_pin_table,required_columns, additional_column)
     #st.text(f"Before Side Allocation Flag :{before_priority_flag}")
     #st.dataframe(added_empty_priority_column)
-    priority_added = SideAllocation_functions.assigning_priority_for_group(added_empty_priority_column)
+    priority_mapping_json = f"priority_mappings_2.json"
+    priority_added = SideAllocation_functions.assigning_priority_for_group(added_empty_priority_column,priority_mapping_json)
     #st.text(f"Priority Column Added")
     #st.dataframe(priority_added)
 
