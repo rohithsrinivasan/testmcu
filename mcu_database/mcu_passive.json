@@ -1,14 +1,21 @@
 {
-    "No Connect": [
+  "No Connect": [
     "(N.C)",
     "CAP1",
     "CAP2",
     "IC",
+    "IC(VPP)",
     "IC0",
     "IC1",
+    "IC2",
+    "IC3",
+    "IC4",
+    "IC5",
+    "N.C.",
     "NC",
+    "Notused",
     "RESERVE",
     "Reserve",
     "Reserved"
-]
+  ]
 }
