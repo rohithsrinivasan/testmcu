@@ -69,7 +69,7 @@ def priority_order(row, df, priority_mapping_json):
     # 3. Input + Port check (MUST COME BEFORE GENERIC PORT HANDLING!)
     if row['Electrical Type'] == 'Input' and value.strip().startswith("Port"):
         for alt_name, priority in mappings['swap_conditions'].items():
-            if alt_name in value_alternative:
+            if alt_name in str(value_alternative):
                 # --- Define swap function OUTSIDE the loop ---
                 swap_pins_for_that_row(df, index, mappings['swap_conditions'])
                 return priority
