@@ -163,8 +163,29 @@ def allocate_small_dataframe(row, df):
     if row.name in left:
         return 'Left'
     else:
-        return 'Right'
+        return 'Right' 
 
+'''def allocate_small_dataframe(row, df):
+    grouped_indices = df.groupby('Priority').indices
+    total_rows = len(df)
+    left = []
+    right = []
+    right_limit = total_rows // 2
+
+    last_side = 'Right'
+
+    # Iterate through priority groups in reverse order (to prioritize right based on last seen priorities)
+    for group in reversed(list(grouped_indices.values())):
+        if last_side == 'Right' and len(right) + len(group) <= right_limit:
+            right.extend(group)
+        else:
+            left.extend(group)
+            last_side = 'Left'
+
+    if row.name in right:
+        return 'Right'
+    else:
+        return 'Left' '''
 
 
 def assigning_side_for_priority(df):
@@ -294,35 +315,20 @@ def process_dataframe(df_copy):
 
                 # Reconstruct the priority with the inverse number and inverse first letter
                 df_copy.at[index, 'Changed Grouping'] = inverse_first_letter + sorted_row['Priority'][1:-2] + inverse_num_part + "_" + num_part
+            
+            elif len(sorted_row['Priority']) >= 2 and sorted_row['Priority'][-2] == ' ' and sorted_row['Priority'][-1].isalpha():
+                space_letter = sorted_row['Priority'][-1]  # Get just the letter part
+                inverse_letter = alphabetical_inverse(space_letter)
+                
+                # Reconstruct with inverse first letter and inverse space letter
+                df_copy.at[index, 'Changed Grouping'] = inverse_first_letter + sorted_row['Priority'][1:-2] +"_" +inverse_letter + "__" +space_letter
+
             else:
                 # If no number at the end, just change the first letter
                 df_copy.at[index, 'Changed Grouping'] = inverse_first_letter + sorted_row['Priority'][1:]
 
     return df_copy
 
-
-def Dual_in_line_as_per_Renesas(df):
-    # Check if the input is a dictionary of DataFrames
-    if isinstance(df, dict):
-        df_copy_dict = {}  # Initialize a dictionary to store modified DataFrames
-        
-        # Iterate through each DataFrame in the input dictionary
-        for table_name, df_copy in df.items():
-            # Create a copy of the current DataFrame
-            df_copy = df_copy.copy()
-            # Process the DataFrame
-            df_copy_dict[table_name] = process_dataframe(df_copy)
-        
-        return df_copy_dict  # Return the modified dictionary of DataFrames
-
-    # If the input is not a dictionary, process the single DataFrame
-    df_copy = df.copy()
-    processed_dataframe = process_dataframe(df_copy)
-
-    process_dataframe = process_dataframe.drop(['Grouping', 'Priority'], axis=1)
-    print(f"Dataframe headers : {process_dataframe.head()}")
-
-    return processed_dataframe
 
 def Dual_in_line_as_per_Renesas(df):
     # Check if the input is a dictionary of DataFrames

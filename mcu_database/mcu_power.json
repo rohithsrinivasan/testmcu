@@ -158,7 +158,9 @@
       "VSS0(N.C.)",
       "VSS1(N.C.)",
       "VSS2(N.C.)",
-      "VSSNC"
+      "VSSNC",
+      "VSS(NC)"
+
     ],
     "Analog Power Supply Negative PLL": [
       "PLLVCL",

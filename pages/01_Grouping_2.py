@@ -242,9 +242,11 @@ else:
         required_columns = ["Pin Designator", "Pin Display Name", "Electrical Type", "Pin Alternate Name"]
         df = df[[col for col in required_columns if col in df.columns]]
 
+
         # Filter out rows where "Pin Alternate Name" contains "renesas"
         if "Pin Alternate Name" in df.columns:
             df = df[~df["Pin Alternate Name"].str.contains("renesas", case=False, na=False)]
+            df = df[~df["Pin Alternate Name"].str.contains("Cortex", case=False, na=False)]
 
         # Always render the toggle switch
         testing_electrical_type = st.toggle("Testing Electrical Type", value=False)

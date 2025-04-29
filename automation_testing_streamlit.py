@@ -61,8 +61,9 @@ def automate_streamlit(input_dir, output_dir):
 
 if __name__ == "__main__":
     # Configure these paths (use raw strings for Windows)
-    input_directory = r"C:\Users\a5149169\Downloads\Automation_testing-2"
-    output_directory = r"C:\Users\a5149169\Downloads\Automation_testing-2\Results"
+    input_directory = r"C:\Users\a5149169\Downloads\testing_mcumpu_category_3_wise 1\Automation_testing_pptx"
+    output_directory = r"C:\Users\a5149169\Downloads"
+
 
     
     # Create output directory if needed
