@@ -58,6 +58,7 @@ def part_number_details(input_part_number,input_buffer):
     part_number_index_pages = part_number_details_functions.find_pages_between_keywords(input_buffer, start_keyword, end_keyword)
     st.text(f'Part Number Indexing pages : {part_number_index_pages}')
     dfs = part_number_details_functions.extracting_tables_in_pages(input_buffer, part_number_index_pages)
+    #st.dataframe(f"my dataframe :\n{dfs}")
     st.text(f"Number of PartNumber indexing table(s): {len(dfs)}")
 
     Before_merging_flag = part_number_details_functions.before_merging(dfs)

@@ -35,9 +35,9 @@
 
       "No Connect": "X_No Connect",
 
-      "Analog Power Supply Negative": "ZAA_Analog Power Supply Negative",
+      "Analog Power Supply Negative_VSS" : "ZAA_Analog Power Supply Negative_VSS",
+      "Power Supply Epad Negative": "ZAAE_Power Supply Epad Negative",
       "Analog Power Supply Negative_AVSS" : "ZAB_Analog Power Supply Negative_AVSS",
-      "Analog Power Supply Negative_VSS" : "ZAC_Analog Power Supply Negative_VSS",
       "Analog Power Supply Negative_IO": "ZAD_Analog Power Supply Negative_IO",
       "Analog Power Supply Negative_Others": "ZAE_Analog Power Supply Negative_Special",
       "Analog Power Supply Negative_Clocks" : "ZAF_Analog Power Supply Negative_Clocks",
@@ -50,18 +50,17 @@
       "Analog Power Supply Negative PLL": "ZAO_Analog Power Supply Negative PLL",
       "Analog Power Supply Negative REG": "ZAP_Analog Power Supply Negative REG",
       
-      "Analog Power Supply Negetive UGND": "ZAE_Analog Power Supply Negetive UGND",
-      "Analog Power Supply Negetive ADC": "ZAF_Analog Power Supply Negetive ADC",
-      "Analog Power Supply Negetive Programmable Gain Amp": "ZAG_Analog Power Supply Negetive Programmable Gain Amp",
-      "Analog Power Supply Negetive PLL": "ZAH_Analog Power Supply Negetive PLL",
-      "Analog Power Supply Negetive Video Decoder": "ZAI_Analog Power Supply Negetive Video Decoder",
-      "Analog Power Supply Negative No Connect" : "ZAJ_Analog Power Supply Negative No Connect",
-      "DDR Power Supply Negative": "ZB_DDR Power Supply Negative",
-      "DIGITAL_RF_Negetive": "ZC_DIGITAL_RF_Negetive",
-      "USB Power Supply Negative": "ZU_USB Power Supply Negative",
-      "RF Power Supply Negative": "ZV_RF Power Supply Negative",
-      "Common Ground": "ZY_Common Ground",
-      "Power Supply Epad Negative": "ZZ_Power Supply Epad Negative",
+      "Analog Power Supply Negetive UGND": "ZBE_Analog Power Supply Negetive UGND",
+      "Analog Power Supply Negetive ADC": "ZBF_Analog Power Supply Negetive ADC",
+      "Analog Power Supply Negetive Programmable Gain Amp": "ZBG_Analog Power Supply Negetive Programmable Gain Amp",
+      "Analog Power Supply Negetive PLL": "ZBH_Analog Power Supply Negetive PLL",
+      "Analog Power Supply Negetive Video Decoder": "ZBI_Analog Power Supply Negetive Video Decoder",
+      "Analog Power Supply Negative No Connect" : "ZBJ_Analog Power Supply Negative No Connect",
+      "DDR Power Supply Negative": "ZCA_DDR Power Supply Negative",
+      "DIGITAL_RF_Negetive": "ZCB_DIGITAL_RF_Negetive",
+      "USB Power Supply Negative": "ZCD_USB Power Supply Negative",
+      "RF Power Supply Negative": "ZCP_RF Power Supply Negative",
+      "Common Ground": "ZG_Common Ground",
 
 
       "Reset": "BA_Reset",
@@ -201,7 +200,7 @@
       "XT": "CB_External_Clocks/Oscillators",
       "MD": "E_ModePins",
       "NMI": "I_Interrupts",
-      "VREF": "A_Power_Ref_Positive",
-      "VRFF": "A_Power_Ref_Positive"
+      "VREF": "ABA_Power_Ref_Positive",
+      "VRFF": "ABA_Power_Ref_Positive"
     }
   }
