@@ -60,15 +60,15 @@ if 'grouped_pin_table' in st.session_state:
     else:
         st.text(f"Executing Partioning")
         df_dict = SideAllocation_functions.partitioning(added_empty_side_column)
-        st.text("Raw data dict")
-        for subheader, dataframe in df_dict.items():
-            st.subheader(subheader)
-            st.dataframe(dataframe)
+        #st.text("Raw data dict")
+        #for subheader, dataframe in df_dict.items():
+        #    st.subheader(subheader)
+        #    st.dataframe(dataframe)
         side_added_dict = SideAllocation_functions.assigning_side_for_priority_for_dataframes_within_dictionary(df_dict)
-        st.text(f"Side Column Added")
-        for subheader, dataframe in side_added_dict.items():
-            st.subheader(subheader)
-            st.dataframe(dataframe)
+        #st.text(f"Side Column Added")
+        #for subheader, dataframe in side_added_dict.items():
+        #    st.subheader(subheader)
+        #    st.dataframe(dataframe)
 
 
         #side_added = SideAllocation_functions.convert_dict_to_list(df_dict)

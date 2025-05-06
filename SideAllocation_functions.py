@@ -268,14 +268,14 @@ def process_dataframe(df_copy):
         if letter.isalpha() and letter.isupper():
             return chr(155 - ord(letter))  # A -> Z, B -> Y, etc.
         return letter
-
-    # Function to get the alphabet corresponding to the reverse of a number (e.g., 01 -> Z, 05 -> V)
+    
     def number_to_alphabet_inverse(number_str):
         if number_str.isdigit():
             num = int(number_str)
-            if 1 <= num <= 26:
-                return chr(91 - num)  # 1 -> Z, 2 -> Y, 3 -> X, ..., 26 -> A
+            if 0 <= num <= 25:
+                return chr(90 - num)  # 0 -> Z, 1 -> Y, ..., 25 -> A
         return number_str
+
 
     # Function to sort groups by 'Pin Display Name' in descending order for 'Right' side
     def assigning_descending_order_for_similar_group(group):

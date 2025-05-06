@@ -20,6 +20,7 @@ def partitioning(df_last):
     # Initialize result DataFrames
     df_Part_A = pd.DataFrame()
     port_df_side_added = pd.DataFrame()
+    Port_Part_1 = pd.DataFrame()
     Port_Balance_1 = pd.DataFrame()
     Port_Balance_2 = pd.DataFrame()
     Port_Balance_3 = pd.DataFrame()
