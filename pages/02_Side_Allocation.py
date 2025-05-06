@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from tabula import read_pdf
 import SideAllocation_functions
+import ai_functions
 from dotenv import load_dotenv
 import google.generativeai as genai
 import functions as f
@@ -87,6 +88,16 @@ if 'grouped_pin_table' in st.session_state:
 
         grouping_changed = SideAllocation_functions.Dual_in_line_as_per_Renesas(added_empty_new_grouping_column)
         #st.text(f"DIL template as per Renesas")
+
+
+        required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Side', 'Changed Grouping','Description']
+        additional_column = 'Description'
+        before_description_flag, added_empty_description_column = SideAllocation_functions.check_excel_format(grouping_changed ,required_columns, additional_column) 
+
+        gemini_api_key = "AIzaSyDQtcnAOBKCHdXo48OSaPXNTS2JaHo2FyM"
+        description_added = ai_functions.Add_Description_for_pin(added_empty_description_column,gemini_api_key)
+        
+        grouping_changed = description_added
 
         if isinstance(grouping_changed, pd.DataFrame):
             grouping_changed = SideAllocation_functions.final_filter(grouping_changed) 
