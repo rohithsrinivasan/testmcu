@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 import functions as f
 import glob
+import ai_functions
 
 st.set_page_config(page_icon= 'dados/logo_small.png', page_title= "SymbolGen" )
 
@@ -70,24 +71,91 @@ non_standard = st.toggle("For Non Standard Datasheet")
 
 if non_standard:
 
-    st.write("Upload pin table in csv format")    
-    uploaded_file = st.file_uploader("Upload a CSV  file", type=["csv"])
+    st.write("Upload pin table in table format")    
+    uploaded_csv = st.file_uploader("Upload a exel  file", type=["csv","xlsx"])
 
-    if uploaded_file is not None:
-        input_csv_file_name = uploaded_file.name
+    if uploaded_csv is not None:
         try:
-            #df = pd.read_excel(uploaded_file)
-            df = pd.read_csv(uploaded_file)
-            print(f"Uploaded file step 2")
+            # Try reading the uploaded file
+            input_csv_file_name = uploaded_csv.name
+            st.session_state["uploaded_csv_name"] = uploaded_csv.name
+            if uploaded_csv.name.endswith(".xlsx"):
+                df = pd.read_excel(uploaded_csv)
+            else:
+                df = pd.read_csv(uploaded_csv)
+
+            st.write("File uploaded successfully.")
+        
         except Exception as e:
-            print(f"Error reading excel file: {e}")
-            st.error("An error occurred while processing the uploaded file.")
+            st.error(f"An error occurred while processing the uploaded file: {e}")
+            st.stop()  # Stop execution if file can't be read
+
+        # Convert column names to lowercase for case-insensitive handling
+        df.columns = df.columns.str.lower()
+        st.session_state["part number"] = df.loc[0, 'comment'] if 'comment' in df.columns else None
+
+        # Define required column mappings
+        column_mappings = {
+            "designator": "Pin Designator",
+            "pin designator": "Pin Designator",
+            "name": "Pin Display Name",
+            "pin name": "Pin Display Name",
+            "electrical": "Electrical Type",
+            "electrical type": "Electrical Type",
+            "description": "Pin Alternate Name"
+        }
+
+        # Find and rename matching columns
+        new_column_names = {}
+        warnings = []
+
+        for col in df.columns:
+            for key, value in column_mappings.items():
+                if col.lower() == key.lower():
+                    new_column_names[col] = value
+
+        if new_column_names:
+            df = df.rename(columns=new_column_names)
+            warnings.append("Column names were adjusted due to mismatches.")
+
         required_columns = ["Pin Designator", "Pin Display Name", "Electrical Type", "Pin Alternate Name"]
-        df = df[required_columns]
-        print(f"my df : {df}")
+        df = df[[col for col in required_columns if col in df.columns]]
+
+
+        # Filter out rows where "Pin Alternate Name" contains "renesas"
+        if "Pin Alternate Name" in df.columns:
+            df = df[~df["Pin Alternate Name"].str.contains("renesas", case=False, na=False)]
+            df = df[~df["Pin Alternate Name"].str.contains("Cortex", case=False, na=False)]
+
+        # Always render the toggle switch
+        # testing_electrical_type = st.toggle("Testing Electrical Type", value=False)
+
+        # # If toggle is enabled and "Electrical Type" column exists, remove it
+        # if testing_electrical_type and "Electrical Type" in df.columns:
+        #     df = df.drop(columns=["Electrical Type"])
+        #     st.write("'Electrical Type' column has been removed.")
+        # elif "Electrical Type" not in df.columns:
+        #     st.write("'Electrical Type' column is not present in the DataFrame.")
+        # else:
+        #     st.write("'Electrical Type' column is retained.")
+
+
+
+        # Display warnings if any adjustments were made
+        if warnings:
+            for warning in warnings:
+                st.warning(warning)
+
+        # Display cleaned DataFrame
+        #st.write("Processed Data:")
+        #st.dataframe(df)
         st.session_state['pin_table'] = df.to_dict('records')
         st.write("Pin table uploaded successfully.")
         st.session_state['pin_table'] = df
+
+    else:
+        st.warning("Please upload an Excel file to continue")
+
 
 if input_buffer:
     if input_part_number:
@@ -101,7 +169,7 @@ if input_buffer:
     else:
         st.warning("Please enter a valid Part Number.")
 else:
-    st.info("Please upload Input") 
+    print("Please upload Input") 
 
 if 'pin_table' in st.session_state:
     pin_table = st.session_state['pin_table']
@@ -190,7 +258,7 @@ if 'pin_table' in st.session_state:
         
         if no_grouping_assigned.empty:
             st.info("All grouping values are filled.") 
-            st.success("Done!")
+            #st.success("Done!")
             st.session_state["page"] = "SideAlloc" 
             st.session_state['grouped_pin_table'] = pin_grouping_table            
 
@@ -260,8 +328,8 @@ if 'pin_table' in st.session_state:
 
 
     # Check if redirection to "SideAlloc" page is needed
-    if "page" in st.session_state and st.session_state["page"] == "SideAlloc":
-        st.page_link("pages/02_Side_Allocation.py", label="SideAlloc")
+    #if "page" in st.session_state and st.session_state["page"] == "SideAlloc":
+        #st.page_link("pages/02_Side_Allocation.py", label="SideAlloc")
     #else:
         #print("Grouped Pin table displayed") 
         #st.write("Grouped Pin table displayed")
@@ -274,7 +342,8 @@ if 'grouped_pin_table' in st.session_state:
     additional_column = 'Priority'
     before_priority_flag, added_empty_priority_column = SideAllocation_functions.check_excel_format(grouped_pin_table,required_columns, additional_column)
 
-    priority_added = SideAllocation_functions.assigning_priority_for_group(added_empty_priority_column)
+    priority_mapping_json = f"priority_mappings_2.json"
+    priority_added = SideAllocation_functions.assigning_priority_for_group(added_empty_priority_column,priority_mapping_json)
 
     required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Grouping','Priority', 'Side']
     additional_column = 'Side'
@@ -308,6 +377,36 @@ if 'grouped_pin_table' in st.session_state:
 
         grouping_changed = SideAllocation_functions.Dual_in_line_as_per_Renesas(added_empty_new_grouping_column)
         #st.text(f"DIL template as per Renesas")
+
+        required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Side', 'Changed Grouping','Description']
+        additional_column = 'Description'
+        before_description_flag, added_empty_description_column = SideAllocation_functions.check_excel_format(grouping_changed ,required_columns, additional_column) 
+
+        gemini_api_key = "AIzaSyDQtcnAOBKCHdXo48OSaPXNTS2JaHo2FyM"
+        #description_added = ai_functions.Add_Description_for_pin(added_empty_description_column,gemini_api_key)
+
+        with st.status("🔄 Processing pin descriptions", expanded=True) as status:
+            
+            # 2. Add a visual spinner
+            with st.spinner("Generating AI-powered descriptions..."):
+                
+                # 3. Your time-consuming function
+                try:
+                    description_added = ai_functions.Add_Description_for_pin(
+                        added_empty_description_column,
+                        gemini_api_key
+                    )
+                    
+                    # 4. Success message
+                    status.update(label="✅ Descriptions completed!", state="complete")
+                    grouping_changed = description_added
+                    
+                except Exception as e:
+                    # 5. Error handling
+                    status.update(label="❌ Failed to generate descriptions", state="error")
+                    st.error(f"Error: {str(e)}")
+                    st.stop()
+                    grouping_changed= grouping_changed
 
         if isinstance(grouping_changed, pd.DataFrame):
             grouping_changed = SideAllocation_functions.final_filter(grouping_changed) 
