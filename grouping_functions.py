@@ -44,12 +44,13 @@ def check_excel_format_for_type(df):
   except Exception as e:
     print(f"Error reading Excel file: {e}")
     return False, df 
-  
+
+
 def assigning_grouping_as_per_database(old_df, json_paths):
     df = old_df.copy()
     
     try:
-        # Load all JSON files
+        # Load JSON files
         with open(json_paths['Input'], 'r') as f:
             input_label_map = json.load(f)
         with open(json_paths['Power'], 'r') as f:
@@ -61,42 +62,48 @@ def assigning_grouping_as_per_database(old_df, json_paths):
         with open(json_paths['Passive'], 'r') as f:
             passive_label_map = json.load(f)
 
-        # Define a generic function to search for a label in all JSON files
+        def clean_string(s):
+            """Remove ALL whitespace and normalize case"""
+            return ''.join(str(s).split()).upper()
+
         def get_label(name, label_maps):
-            name = name.strip()
+            clean_name = clean_string(name)
             for label_map in label_maps:
                 for label, names in label_map.items():
-                    if name in [item.strip() for item in names]:
+                    if clean_name in [clean_string(n) for n in names]:
                         return label
-            print(f"Warning: Could not find a matching label for {name} in any JSON file.")
+            print(f"Warning: No match for '{name}' (cleaned as '{clean_name}')")
             return None
 
-        # Apply the correct function based on Electrical Type
-        df['Grouping'] = None  # Initialize the Grouping column with None
+        df['Grouping'] = None
 
         for index, row in df.iterrows():
-            if row['Electrical Type'] == "Input":
-                label = get_label(row['Pin Display Name'], [input_label_map, io_label_map, power_label_map, output_label_map, passive_label_map])
-            elif row['Electrical Type'] == "Power":
-                label = get_label(row['Pin Display Name'], [power_label_map, io_label_map, input_label_map, output_label_map, passive_label_map])
-            elif row['Electrical Type'] == "Output":
-                label = get_label(row['Pin Display Name'], [output_label_map, io_label_map, input_label_map, power_label_map, passive_label_map])
-            elif row['Electrical Type'] == "I/O":
-                label = get_label(row['Pin Display Name'], [io_label_map, input_label_map, power_label_map, output_label_map, passive_label_map])
-            elif row['Electrical Type'] == "Passive":
-                label = get_label(row['Pin Display Name'], [passive_label_map, io_label_map, input_label_map, power_label_map, output_label_map])
-            else:
-                label = None  # Handle unknown Electrical Types
+            pin_name = str(row['Pin Display Name'])
+            # PROPER cleaning of Electrical Type
+            elec_type = clean_string(row['Electrical Type'])
 
-            if label is not None:
+            if elec_type == "INPUT":
+                label = get_label(pin_name, [input_label_map, io_label_map])
+            elif elec_type == "POWER":
+                label = get_label(pin_name, [power_label_map])
+            elif elec_type == "OUTPUT":
+                label = get_label(pin_name, [output_label_map, io_label_map])
+            elif elec_type == "I/O":
+                label = get_label(pin_name, [io_label_map])
+            elif elec_type == "PASSIVE":
+                label = get_label(pin_name, [passive_label_map])
+            else:
+                print(f"Unknown Electrical Type: '{row['Electrical Type']}' (cleaned as '{elec_type}')")
+                label = None
+
+            if label:
                 df.at[index, 'Grouping'] = label
 
-        print("Labels assigned to Grouping column successfully.")
-
     except Exception as e:
-        print(f"Error processing files: {e}")
-
+        print(f"Error: {e}")
+    
     return df
+
 
 def assigning_pin_type_as_per_database(old_df, json_paths):
     df = old_df.copy()
@@ -108,35 +115,41 @@ def assigning_pin_type_as_per_database(old_df, json_paths):
             with open(path, 'r') as f:
                 label_maps[key] = json.load(f)
 
-        # Define a function to find the file name (key) for a given pin name
+        def clean_string(s):
+            """Remove ALL whitespace (spaces, \n, \t) and normalize case"""
+            return ''.join(str(s).split()).upper()
+
         def get_file_name(pin_name):
-            pin_name = pin_name.strip().replace(" ", "_")
-            matches = set()  # Use a set to store unique file names where the pin is found
+            clean_pin = clean_string(pin_name)
+            matches = set()
             
             # Check each JSON file for the pin name
             for file_name, label_map in label_maps.items():
                 for label, names in label_map.items():
-                    if pin_name in [item.strip() for item in names]:
-                        matches.add(file_name)  # Add the file name to the set
+                    # Clean all names in JSON before comparison
+                    if clean_pin in [clean_string(item) for item in names]:
+                        matches.add(file_name)
             
-            # Handle conflicts (pin found in multiple JSON files)
+            # Handle conflicts and missing pins
             if len(matches) > 1:
-                print(f"Conflict: Pin '{pin_name}' found in multiple files: {matches}. Assigning 'NAss'.")
-                return "XX"
+                print(f"Conflict: Pin '{pin_name}' (cleaned: '{clean_pin}') found in multiple files: {matches}")
+                return None
             elif len(matches) == 1:
-                return matches.pop()  # Return the file name where the pin was found
+                return matches.pop()
             else:
-                print(f"Warning: Pin '{pin_name}' not found in any JSON file. Assigning 'NAv'.")
-                return "X"
+                print(f"Warning: Pin '{pin_name}' (cleaned: '{clean_pin}') not found in any JSON file")
+                return None
 
-        # Apply the function to assign file names based on Pin Display Name
-        df['Electrical Type'] = df['Pin Display Name'].apply(get_file_name)
+        # Apply with proper cleaning
+        df['Electrical Type'] = df['Pin Display Name'].apply(
+            lambda x: get_file_name(str(x).strip())
+        )
 
-        print("File names assigned to Grouping column successfully.")
+        print("Pin types assigned successfully.")
 
     except Exception as e:
-        print(f"Error processing files: {e}")
-
+        print(f"Error: {str(e)}")
+    
     return df
 
 def assigning_grouping_as_per_LLM(pin_table):
@@ -175,6 +188,10 @@ def assigning_grouping_as_per_algorithm(df):
 def check_empty_groupings(df):
     empty_groupings = df[df['Grouping'].isna()]
     return empty_groupings
+
+def check_empty_pintypes(df):
+    empty_electrical_type = df[df['Electrical Type'].isna()]
+    return empty_electrical_type
 
 def get_suggestions(user_input, json_data):
 
