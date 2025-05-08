@@ -129,7 +129,7 @@ def extracting_pin_tables_in_pages(file_path, my_list_of_pages):
         #print(f"modified_df_2 : {modified_df}")
         #modified_df = modified_df.drop(modified_df[modified_df.isin(['Designator']).any(axis=1)].index)
 
-        if modified_df.shape[1] == 4 and 'electrical' in column_string_variable.lower():
+        if modified_df.shape[1] == 4 and 'elect' in column_string_variable.lower():
             #print("DataFrame has 4 columns as expected")
             # Assign expected column names ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name']
             #modified_df.columns = ["Orderable Part Number", "Number of Pins", "Package", "Package Code/POD Number"]

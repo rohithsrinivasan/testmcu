@@ -101,10 +101,12 @@ def extracting_pin_tables(file_path, part_number, number_of_pins, package_type, 
     #st.text_area(f" Table as text : \n {table_as_text}")
     # Creating combinatios of tablesas strings
     combo_dict, num = extracting_pin_tables_functions.combine_dataframes_and_print_dictionary(dfs)
+    st.text(f"combo dict : {combo_dict}")
+    st.text(f"Number of combo dict: {num}")
     top_3_combinations = extracting_pin_tables_functions.filter_top_3_by_size(combo_dict, table_as_text)
     st.text(top_3_combinations)
     reduced_combo_dict  = extracting_pin_tables_functions.filter_combo_dict_based_on_size_filter(combo_dict, top_3_combinations)
-    #st.text(reduced_combo_dict)
+    st.text(reduced_combo_dict)
     noise_calculation_combo_dict, min_key = extracting_pin_tables_functions.compare_input_string_with_value_string(reduced_combo_dict, table_as_text)
     st.text(f"Mapping After noise filter Algo : {noise_calculation_combo_dict}")
     st.text(min_key)
