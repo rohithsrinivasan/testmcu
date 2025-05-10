@@ -90,33 +90,8 @@ if 'pin_table' in st.session_state:
         before_pin_type_flag, added_empty_pin_type_column = grouping_functions.check_excel_format_for_type(pin_table)
         pin_type_added_table = grouping_functions.assigning_pin_type_as_per_database(added_empty_pin_type_column, json_paths) 
         st.dataframe(pin_type_added_table)
-
-        no_pintype_assigned = grouping_functions.check_empty_pintypes(pin_type_added_table)
-        
-        if no_pintype_assigned.empty:
-            st.info("All Electrical Types are filled.") 
-            st.success("Done with Electrical Type!")
-            st.session_state['pin_table'] = pin_type_added_table
-            database_for_grouping = st.checkbox("Use database for grouping")          
-
-        else:
-            st.info("Please fill in group values for these:")
-            pin_type_edited_df = st.data_editor(no_pintype_assigned)
-
-            if pin_type_edited_df['Electrical Type'].isnull().any():
-                st.info("Please enter Electrical Types Types for all.")
-
-            else:
-                pin_type_added_table .update(pin_type_edited_df)
-                st.text("Pin Type Added Table")
-                st.dataframe(pin_type_added_table)
-                st.success("Done with Electrical Type!")
-                st.session_state['pin_table'] = pin_type_added_table
-                database_for_grouping = st.checkbox("Use database for grouping")
-
-    else:
-        st.info("Please use the checkbox for using database for Pin type")
-        pin_type_added_table = pd.DataFrame()    
+        st.session_state['pin_table'] = pin_type_added_table
+        database_for_grouping = st.checkbox("Use database for grouping")
         
     if database_for_grouping:
         st.success("Using database for grouping")
@@ -206,7 +181,7 @@ if 'pin_table' in st.session_state:
                 st.session_state['grouped_pin_table'] = pin_grouping_table 
 
     else:
-        st.info("Please use the checkbox for using database")
+        st.info("Please the checkbox for using database")
         pin_grouping_table = pd.DataFrame()                            
 
 
