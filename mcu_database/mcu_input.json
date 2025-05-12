@@ -754,12 +754,18 @@
   "External_Clock": [
     "EMEXTAL",
     "EXCIN",
+    "XCIN",
     "EXCLK",
     "EXRES1",
     "EXTAL",
     "EXTAL2",
     "EXTAL48",
     "EXTALR",
+    "XTAL",
+    "XTAL2",
+    "XTAL32M_GND",
+    "XTAL32Mm",
+    "XTAL32Mp",
     "EXTCLKIN",
     "EX_WAIT0",
     "EX_WAIT1",
@@ -792,8 +798,7 @@
     "ET1_TXD1",
     "ET1_TXD2",
     "ET1_TXD3",
-    "ET1_TXER",
-    "XCIN"
+    "ET1_TXER"
   ],
   "External_Wait": [
     "W\\A\\I\\T\\",

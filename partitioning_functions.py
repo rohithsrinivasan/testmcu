@@ -214,31 +214,7 @@ def split_into_six_parts(df, max_rows=80):
     return tuple(parts)
 
 
-def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
-    final_dfs = {}
-
-    for title, df in dfs.items():
-        df_copy = df.copy()
-
-        df_new = assigning_side_for_less_than_80_pin_count(df_copy)
-        
-        # Apply sorting based on 'Side'
-        ascending_order_df = df_new[df_new['Side'] == 'Left']
-        ascending_order_df = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df)
-
-        descending_order_df = df_new[df_new['Side'] == 'Right']
-        descending_order_df = sideallocation.assigning_descending_order_for_similar_group(descending_order_df)
-
-        # Concatenate the two sorted DataFrames back together
-        final_df = pd.concat([ascending_order_df, descending_order_df]).reset_index(drop=True)
-        
-        # Store the modified DataFrame in the final dictionary
-        final_dfs[title] = final_df
-    
-    return final_dfs
-
-
-def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
+'''def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
     final_dfs = {}
 
     for title, df in dfs.items():
@@ -250,29 +226,77 @@ def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
             df_copy['Side'] = df_copy.apply(lambda row: filter_out_power_pins(row, df_copy), axis=1)
             
             # Apply sorting based on 'Side'
-            ascending_order_df = df_copy[df_copy['Side'] == 'Left']
-            ascending_order_df = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df)
+            ascending_order_df_left = df_copy[df_copy['Side'] == 'Left']
+            ascending_order_df_left = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_left)
 
-            descending_order_df = df_copy[df_copy['Side'] == 'Right']
-            descending_order_df = sideallocation.assigning_descending_order_for_similar_group(descending_order_df)
+            ascending_order_df_right = df_copy[df_copy['Side'] == 'Right']
+            ascending_order_df_right = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_right)
 
             # Concatenate the two sorted DataFrames back together
-            final_df = pd.concat([ascending_order_df, descending_order_df]).reset_index(drop=True)
+            final_df = pd.concat([ascending_order_df_left, ascending_order_df_right]).reset_index(drop=True)
         else:
             # Normal processing for other tables
             df_new = assigning_side_for_less_than_80_pin_count(df_copy)
             
             # Apply sorting based on 'Side'
-            ascending_order_df = df_new[df_new['Side'] == 'Left']
-            ascending_order_df = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df)
+            ascending_order_df_left = df_new[df_new['Side'] == 'Left']
+            ascending_order_df_left = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_left)
 
-            descending_order_df = df_new[df_new['Side'] == 'Right']
-            descending_order_df = sideallocation.assigning_descending_order_for_similar_group(descending_order_df)
+            ascending_order_df_right = df_new[df_new['Side'] == 'Right']
+            ascending_order_df_right = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_right)
 
             # Concatenate the two sorted DataFrames back together
-            final_df = pd.concat([ascending_order_df, descending_order_df]).reset_index(drop=True)
+            final_df = pd.concat([ascending_order_df_left, ascending_order_df_right]).reset_index(drop=True)
         
         # Store the modified DataFrame in the final dictionary
+        final_dfs[title] = final_df
+    
+    return final_dfs'''
+
+
+def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
+    final_dfs = {}
+
+    for title, df in dfs.items():
+        print(f"\n=== Processing {title} ===")
+        print(f"Input DataFrame shape: {df.shape}")
+        print(f"Unique Priority values: {df['Priority'].unique()}")
+        
+        df_copy = df.copy()
+        
+        if title == 'Power Table':
+            # Debug power pin filtering
+            print("\nPower Table Processing:")
+            df_copy['Side'] = df_copy.apply(lambda row: filter_out_power_pins(row, df_copy), axis=1)
+            print(f"Left power pins: {len(df_copy[df_copy['Side'] == 'Left'])}")
+            print(f"Right power pins: {len(df_copy[df_copy['Side'] == 'Right'])}")
+            
+            ascending_order_df_left = df_copy[df_copy['Side'] == 'Left']
+            ascending_order_df_left = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_left)
+            ascending_order_df_right = df_copy[df_copy['Side'] == 'Right']
+            ascending_order_df_right = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_right)
+            
+            final_df = pd.concat([ascending_order_df_left, ascending_order_df_right]).reset_index(drop=True)
+        else:
+            print("\nNormal Table Processing:")
+            df_new = assigning_side_for_less_than_80_pin_count(df_copy)
+            print(f"After side allocation:")
+            print(f"Left pins: {len(df_new[df_new['Side'] == 'Left'])}")
+            print(f"Right pins: {len(df_new[df_new['Side'] == 'Right'])}")
+            print(f"Unassigned pins: {len(df_new[df_new['Side'].isna()])}")
+            
+            ascending_order_df_left = df_new[df_new['Side'] == 'Left']
+            ascending_order_df_left = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_left)
+            ascending_order_df_right = df_new[df_new['Side'] == 'Right']
+            ascending_order_df_right = sideallocation.assigning_ascending_order_for_similar_group(ascending_order_df_right)
+            
+            final_df = pd.concat([ascending_order_df_left, ascending_order_df_right]).reset_index(drop=True)
+        
+        print(f"\nFinal results for {title}:")
+        print(f"Total pins: {len(final_df)}")
+        print(f"Left side: {len(final_df[final_df['Side'] == 'Left'])}")
+        print(f"Right side: {len(final_df[final_df['Side'] == 'Right'])}")
+        
         final_dfs[title] = final_df
     
     return final_dfs

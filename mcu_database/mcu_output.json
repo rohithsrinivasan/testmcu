@@ -305,12 +305,7 @@
     "RTXOUT",
     "USBXTAL",
     "USB_XTAL",
-    "XOUT",
-    "XTAL",
-    "XTAL2",
-    "XTAL32M_GND",
-    "XTAL32Mm",
-    "XTAL32Mp"
+    "XOUT"
   ],
   "Other_Output": [
     "AMP0O",

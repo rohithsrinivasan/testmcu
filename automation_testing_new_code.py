@@ -49,7 +49,9 @@ def automate_streamlit(input_dir, output_dir):
                         page.get_by_text("Download All").click()
 
                 download = download_info.value
-                print(f"✅ Saved to: {os.path.join(output_dir, download.suggested_filename)}")
+                download_path = os.path.join(output_dir, download.suggested_filename)
+                download.save_as(download_path)
+                print(f"✅ Saved to: {download_path}")
 
                 # Brief pause before next file
                 time.sleep(2)

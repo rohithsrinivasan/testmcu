@@ -214,6 +214,8 @@ else:
         # Convert column names to lowercase for case-insensitive handling
         df.columns = df.columns.str.lower()
         st.session_state["part number"] = df.loc[0, 'comment'] if 'comment' in df.columns else None
+        # Remove rows where all columns are None
+
 
         # Define required column mappings
         column_mappings = {
@@ -266,6 +268,11 @@ else:
         if warnings:
             for warning in warnings:
                 st.warning(warning)
+
+        df = df.dropna(how='all')
+        df = df[~df.apply(lambda x: x.astype(str).str.isspace().all() or (x.astype(str) == '').all(), axis=1)]
+        # Reset index again after cleaning
+        df = df.reset_index(drop=True)
 
         # Display cleaned DataFrame
         st.write("Processed Data:")

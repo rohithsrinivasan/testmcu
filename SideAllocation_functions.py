@@ -73,7 +73,7 @@ def priority_order(row, df, priority_mapping_json):
                 # --- Define swap function OUTSIDE the loop ---
                 swap_pins_for_that_row(df, index, mappings['swap_conditions'])
                 return priority
-        return "ZZ_Not_Assigned"  # Default if no swap condition matches
+        return f"P_{value}"#"ZZ_Not_Assigned"  # Default if no swap condition matches
     
     # 4. Generic Port handling (now only for non-Input cases)
     if value.strip().startswith("Port"):
@@ -144,7 +144,7 @@ def side_allocation(row, df):
     else:
         return allocate_small_dataframe(row, df)
 
-def allocate_small_dataframe(row, df):
+'''def allocate_small_dataframe(row, df):
     grouped_indices = df.groupby('Priority').indices
     total_rows = len(df)
     left = []
@@ -163,7 +163,7 @@ def allocate_small_dataframe(row, df):
     if row.name in left:
         return 'Left'
     else:
-        return 'Right' 
+        return 'Right' '''
 
 '''def allocate_small_dataframe(row, df):
     grouped_indices = df.groupby('Priority').indices
@@ -174,7 +174,7 @@ def allocate_small_dataframe(row, df):
 
     last_side = 'Right'
 
-    # Iterate through priority groups in reverse order (to prioritize right based on last seen priorities)
+    # Iterate through priority groups in reverse order (to prioritize LEFT based on last seen priorities)
     for group in reversed(list(grouped_indices.values())):
         if last_side == 'Right' and len(right) + len(group) <= right_limit:
             right.extend(group)
@@ -187,6 +187,34 @@ def allocate_small_dataframe(row, df):
     else:
         return 'Left' '''
 
+def allocate_small_dataframe(row, df):
+    """
+    Allocates pins to left and right sides, prioritizing LEFT side assignments first.
+    """
+    grouped_indices = df.groupby('Priority').indices
+    total_rows = len(df)
+    left = []
+    right = []
+    left_limit = (total_rows + 1) // 2  # Using ceiling division for left side
+
+    last_side = 'Left'  # Start with Left side
+
+    # Iterate through priority groups in order (to prioritize LEFT)
+    for group in list(grouped_indices.values()):
+        if last_side == 'Left' and len(left) + len(group) <= left_limit:
+            left.extend(group)
+        else:
+            right.extend(group)
+            last_side = 'Right'
+
+    print(f"\nPin Distribution:")
+    print(f"Total pins: {total_rows}")
+    print(f"Left side: {len(left)} pins")
+    print(f"Right side: {len(right)} pins")
+
+    # Return side based on row index
+    return 'Left' if row.name in left else 'Right'
+
 
 def assigning_side_for_priority(df):
     df_copy = df.copy()
@@ -194,14 +222,17 @@ def assigning_side_for_priority(df):
     df_new['Side'] = df_new.apply(lambda row: side_allocation(row, df_new), axis=1)
     
     # Apply sorting based on 'Side'
-    ascending_order_df = df_new[df_new['Side'] == 'Left']
-    ascending_order_df = assigning_ascending_order_for_similar_group(ascending_order_df)
+    ascending_order_df_left = df_new[df_new['Side'] == 'Left']
+    ascending_order_df_left = assigning_ascending_order_for_similar_group(ascending_order_df_left)
     
-    descending_order_df = df_new[df_new['Side'] == 'Right']
-    descending_order_df = assigning_descending_order_for_similar_group(descending_order_df)
+    #descending_order_df = df_new[df_new['Side'] == 'Right']
+    #descending_order_df = assigning_descending_order_for_similar_group(descending_order_df)
+
+    ascending_order_df_right = df_new[df_new['Side'] == 'Right']
+    ascending_order_df_right = assigning_ascending_order_for_similar_group(ascending_order_df_right)
     
     # Concatenate the two sorted DataFrames back together
-    final_df = pd.concat([ascending_order_df, descending_order_df]).reset_index(drop=True)
+    final_df = pd.concat([ascending_order_df_left, ascending_order_df_right]).reset_index(drop=True)
     
     return final_df
 
@@ -218,7 +249,7 @@ def assigning_descending_order_for_similar_group(df):
     descending_order_df.reset_index(drop=True, inplace=True)
     return descending_order_df'''
 
-def assigning_ascending_order_for_similar_group(df):
+'''def assigning_ascending_order_for_similar_group(df):
     df_copy = df.copy()
     
     # Check each group for all-having-numeric-suffixes
@@ -256,7 +287,43 @@ def assigning_descending_order_for_similar_group(df):
     
     descending_order_df = df_copy.groupby('Priority', group_keys=False).apply(custom_sort)
     descending_order_df.reset_index(drop=True, inplace=True)
-    return descending_order_df
+    return descending_order_df'''
+
+def sort_by_numeric_suffix(df, column_name='Pin Display Name', ascending=True):
+    df = df.copy()
+    
+    # Check if all values contain underscore
+    all_have_underscore = df[column_name].str.contains('_').all()
+    if not all_have_underscore:
+        return df.sort_values(column_name, ascending=ascending)
+    
+    # Check if all values after underscore are numbers
+    all_numeric_after_underscore = df[column_name].str.extract(r'_(\d+)$')[0].notna().all()
+    if not all_numeric_after_underscore:
+        return df.sort_values(column_name, ascending=ascending)
+    
+    # Split the string into base and number parts
+    df['base'] = df[column_name].str.extract(r'(.+?)_')[0]
+    df['number'] = df[column_name].str.extract(r'_(\d+)$')[0].astype(int)
+    
+    # Sort by base first, then by number numerically
+    sorted_df = df.sort_values(
+        by=['base', 'number'],
+        ascending=[ascending, ascending]
+    )
+    
+    # Remove temporary columns and return
+    return sorted_df.drop(columns=['base', 'number'])
+
+def assigning_ascending_order_for_similar_group(df):
+    return df.groupby('Priority', group_keys=False).apply(
+        lambda group: sort_by_numeric_suffix(group, ascending=True)
+    ).reset_index(drop=True)
+
+def assigning_descending_order_for_similar_group(df):
+    return df.groupby('Priority', group_keys=False).apply(
+        lambda group: sort_by_numeric_suffix(group, ascending=False)
+    ).reset_index(drop=True)
 
 
 def process_dataframe(df_copy):
@@ -388,4 +455,28 @@ def remove_grouping_priority_columns(df):
     for col in columns_to_remove:
         if col in df.columns:
             df = df.drop(columns=[col])
+    return df
+
+
+def remove_changed_grouping_priority_columns(df):
+    """
+    Removes 'Grouping' and 'Changed Grouping' columns from a DataFrame if they exist,
+    and renames 'Priority' column to 'Grouping'.
+    
+    Parameters:
+        df (pd.DataFrame): The DataFrame to process.
+    
+    Returns:
+        pd.DataFrame: The DataFrame with columns removed and Priority renamed to Grouping.
+    """
+    # First remove specified columns
+    columns_to_remove = ["Grouping", "Changed Grouping"]
+    for col in columns_to_remove:
+        if col in df.columns:
+            df = df.drop(columns=[col])
+    
+    # Then rename Priority to Grouping if it exists
+    if "Priority" in df.columns:
+        df = df.rename(columns={"Priority": "Grouping"})
+    
     return df

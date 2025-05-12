@@ -65,10 +65,10 @@ if 'grouped_pin_table' in st.session_state:
         #    st.subheader(subheader)
         #    st.dataframe(dataframe)
         side_added_dict = SideAllocation_functions.assigning_side_for_priority_for_dataframes_within_dictionary(df_dict)
-        #st.text(f"Side Column Added")
-        #for subheader, dataframe in side_added_dict.items():
-        #    st.subheader(subheader)
-        #    st.dataframe(dataframe)
+        # st.text(f"Side Column Added")
+        # for subheader, dataframe in side_added_dict.items():
+        #     st.subheader(subheader)
+        #     st.dataframe(dataframe)
 
 
         #side_added = SideAllocation_functions.convert_dict_to_list(df_dict)
@@ -82,10 +82,11 @@ if 'grouped_pin_table' in st.session_state:
 
         required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Grouping','Priority', 'Side', 'Changed Grouping']
         additional_column = 'Changed Grouping'
-        before_new_grouping_flag, added_empty_new_grouping_column = SideAllocation_functions.check_excel_format(side_added,required_columns, additional_column)        
+        before_new_grouping_flag, added_empty_new_grouping_column = SideAllocation_functions.check_excel_format(side_added,required_columns, additional_column)
+        grouping_changed =side_added        
 
 
-        grouping_changed = SideAllocation_functions.Dual_in_line_as_per_Renesas(added_empty_new_grouping_column)
+        #grouping_changed = SideAllocation_functions.Dual_in_line_as_per_Renesas(added_empty_new_grouping_column)
         #st.text(f"DIL template as per Renesas")
 
         user_selected_pin_description_ai = st.checkbox("Add AI Generated Pin Descriptions")
@@ -103,8 +104,9 @@ if 'grouped_pin_table' in st.session_state:
             print("AI Generated Pin Description not selected")
 
 
-
+ 
         if isinstance(grouping_changed, pd.DataFrame):
+            grouping_changed = SideAllocation_functions.remove_changed_grouping_priority_columns(grouping_changed)
             grouping_changed = SideAllocation_functions.final_filter(grouping_changed) 
             st.subheader(f"Smart_Table: ")
             st.dataframe(grouping_changed)  # Display single DataFrame
@@ -135,7 +137,8 @@ if 'grouped_pin_table' in st.session_state:
 
             for key in grouping_changed:
                 df = grouping_changed[key].copy()  # Create a copy of the DataFrame
-                df = SideAllocation_functions.remove_grouping_priority_columns(df)  # Remove the columns
+                #df = SideAllocation_functions.remove_grouping_priority_columns(df)  # Remove the columns
+                df = SideAllocation_functions.remove_changed_grouping_priority_columns(df)
                 grouping_changed[key] = df
 
                 # for key, df in {k: v for k, v in grouping_changed.items() if not v.empty}.items(): 
