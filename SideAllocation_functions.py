@@ -290,30 +290,37 @@ def assigning_descending_order_for_similar_group(df):
     return descending_order_df'''
 
 def sort_by_numeric_suffix(df, column_name='Pin Display Name', ascending=True):
+    """
+    Sorts pin names handling both underscore_number and letter-number formats
+    Examples: 'ABC_123' and 'PA15'
+    """
     df = df.copy()
     
-    # Check if all values contain underscore
+    # First check for underscore pattern
     all_have_underscore = df[column_name].str.contains('_').all()
-    if not all_have_underscore:
-        return df.sort_values(column_name, ascending=ascending)
+    if all_have_underscore:
+        # Original underscore handling
+        all_numeric_after_underscore = df[column_name].str.extract(r'_(\d+)$')[0].notna().all()
+        if all_numeric_after_underscore:
+            df['base'] = df[column_name].str.extract(r'(.+?)_')[0]
+            df['number'] = df[column_name].str.extract(r'_(\d+)$')[0].astype(int)
+            return df.sort_values(
+                by=['base', 'number'],
+                ascending=[ascending, ascending]
+            ).drop(columns=['base', 'number'])
     
-    # Check if all values after underscore are numbers
-    all_numeric_after_underscore = df[column_name].str.extract(r'_(\d+)$')[0].notna().all()
-    if not all_numeric_after_underscore:
-        return df.sort_values(column_name, ascending=ascending)
+    # Check for letter-number pattern (e.g., 'PA15')
+    all_have_letter_number = df[column_name].str.contains(r'^[A-Za-z]+\d+$').all()
+    if all_have_letter_number:
+        df['base'] = df[column_name].str.extract(r'([A-Za-z]+)')[0]
+        df['number'] = df[column_name].str.extract(r'[A-Za-z]+(\d+)')[0].astype(int)
+        return df.sort_values(
+            by=['base', 'number'],
+            ascending=[ascending, ascending]
+        ).drop(columns=['base', 'number'])
     
-    # Split the string into base and number parts
-    df['base'] = df[column_name].str.extract(r'(.+?)_')[0]
-    df['number'] = df[column_name].str.extract(r'_(\d+)$')[0].astype(int)
-    
-    # Sort by base first, then by number numerically
-    sorted_df = df.sort_values(
-        by=['base', 'number'],
-        ascending=[ascending, ascending]
-    )
-    
-    # Remove temporary columns and return
-    return sorted_df.drop(columns=['base', 'number'])
+    # Default alphabetical sort if no patterns match
+    return df.sort_values(column_name, ascending=ascending)
 
 def assigning_ascending_order_for_similar_group(df):
     return df.groupby('Priority', group_keys=False).apply(
