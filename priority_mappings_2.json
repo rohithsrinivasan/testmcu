@@ -35,8 +35,6 @@
 
       "No Connect": "X_No Connect",
 
-      "Analog Power Supply Negative_VSS" : "ZAA_Analog Power Supply Negative_VSS",
-      "Power Supply Epad Negative": "ZAAE_Power Supply Epad Negative",
       "Analog Power Supply Negative_AVSS" : "ZAB_Analog Power Supply Negative_AVSS",
       "Analog Power Supply Negative_IO": "ZAD_Analog Power Supply Negative_IO",
       "Analog Power Supply Negative_Others": "ZAE_Analog Power Supply Negative_Special",
@@ -61,6 +59,8 @@
       "USB Power Supply Negative": "ZCD_USB Power Supply Negative",
       "RF Power Supply Negative": "ZCP_RF Power Supply Negative",
       "Common Ground": "ZG_Common Ground",
+      "Analog Power Supply Negative_VSS" : "ZZA_Analog Power Supply Negative_VSS",
+      "Power Supply Epad Negative": "ZZE_Power Supply Epad Negative",
 
 
       "Reset": "BA_Reset",
