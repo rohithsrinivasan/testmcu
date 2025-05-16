@@ -30,8 +30,8 @@ st.subheader("Side Allocation Page")
 if 'grouped_pin_table' in st.session_state:
     grouped_pin_table = st.session_state['grouped_pin_table']
 
-    st.write("Grouped Pin Table:")
-    st.dataframe(grouped_pin_table)
+    #st.write("Grouped Pin Table:")
+    #st.dataframe(grouped_pin_table)
 
 
     required_columns = ['Pin Designator', 'Pin Display Name', 'Electrical Type', 'Pin Alternate Name', 'Grouping','Priority']
@@ -50,17 +50,17 @@ if 'grouped_pin_table' in st.session_state:
 
     if len(added_empty_side_column) <= 80:
         side_added = SideAllocation_functions.assigning_side_for_priority(added_empty_side_column)
-        st.text(f"Side Column Added")
-        st.dataframe(side_added)
+        #st.text(f"Side Column Added")
+        #st.dataframe(side_added)
     
     else:
         st.text(f"Executing Partioning")
         df_dict = SideAllocation_functions.partitioning(added_empty_side_column)
         side_added_dict = SideAllocation_functions.assigning_side_for_priority_for_dataframes_within_dictionary(df_dict)
-        st.text(f"Side Column Added")
-        for subheader, dataframe in side_added_dict.items():
-            st.subheader(subheader)
-            st.dataframe(dataframe)
+        #st.text(f"Side Column Added")
+        #for subheader, dataframe in side_added_dict.items():
+        #    st.subheader(subheader)
+        #    st.dataframe(dataframe)
 
 
         #side_added = SideAllocation_functions.convert_dict_to_list(df_dict)
@@ -96,7 +96,9 @@ if 'grouped_pin_table' in st.session_state:
         side_added = {k: v for k, v in side_added.items() if not v.empty}
 
         for key in side_added:
+            df = side_added[key]
             df = SideAllocation_functions.final_filter(df)   
+            side_added[key] = df
             st.markdown(f"<h5>Smart Table: {key}</h5>", unsafe_allow_html=True)
             st.dataframe(df)
 

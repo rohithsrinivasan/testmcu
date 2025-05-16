@@ -753,8 +753,6 @@
   ],
   "External_Clock": [
     "EMEXTAL",
-    "EXCIN",
-    "XCIN",
     "EXCLK",
     "EXRES1",
     "EXTAL",
@@ -777,6 +775,12 @@
     "USBEXTAL",
     "USB_EXTAL"
   ],
+
+  "Clock_External_Base":[
+    "EXCIN",
+    "XCIN"
+  ],
+
   "External_Clock_Capacitor": [
     "ET0_RXCTL_RXDV",
     "ET0_RXC_RXCLK",

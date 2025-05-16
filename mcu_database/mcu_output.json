@@ -87,7 +87,7 @@
     "ETXD2",
     "ETXD3"
   ],
-  "External_Clock": [
+  "Clock_External_Base": [
     "EXTLDN",
     "EXTLDP",
     "XCOUT"

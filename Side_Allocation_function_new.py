@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import re
 
 def check_excel_format_dict(df_dict, required_columns, additional_column):
     flag = True
@@ -114,6 +115,8 @@ def assigning_side_for_priority(df):
 
     # Assign side
     df_new['Side'] = df_new.apply(lambda row: allocate_pin_side_by_priority(row, df_new), axis=1)
+    print_grid_spaces(df_new)
+    df_new = balance_grid_space(df_new)
 
     # Assign order (same logic for both sides)
     df_new = assigning_ascending_order_for_similar_group(df_new)
@@ -161,7 +164,7 @@ def allocate_pin_side_by_priority(row, df):
 
     return 'Left' if row.name in left else 'Right'
 
-import re
+
 
 def sort_by_pin_name_pattern(df, column_name='Pin Display Name', ascending=True):
     """
@@ -198,98 +201,82 @@ def assigning_ascending_order_for_similar_group(df, column_name='Pin Display Nam
         lambda group: sort_by_pin_name_pattern(group, column_name=column_name, ascending=True)
     ).reset_index(drop=True)
 
+
+def print_grid_spaces(df):
+    # Group pins by Priority
+    grouped = df.groupby('Priority')
+
+    # Determine side assignment for each pin using `allocate_pin_side_by_priority`
+    df['Side'] = df.apply(lambda row: allocate_pin_side_by_priority(row, df), axis=1)
+
+    # Initialize counters for grid usage
+    left_grids = 0
+    right_grids = 0
+
+    print("\nGrid Usage:")
+    for priority, group in grouped:
+        pins_in_group = len(group)
+        side = group['Side'].iloc[0]  # All pins in group are on the same side
+
+        # Each pin takes one grid + 1 separator between groups
+        if side == 'Left':
+            left_grids += pins_in_group
+            if left_grids != pins_in_group:  # Avoid separator before first group
+                left_grids += 1
+        else:
+            right_grids += pins_in_group
+            if right_grids != pins_in_group:
+                right_grids += 1
+
+        print(f"Group '{priority}' -> {pins_in_group} pins -> Side: {side}")
+
+    print(f"\nTotal Grid Spaces:")
+    print(f"Left: {left_grids} grids")
+    print(f"Right: {right_grids} grids")
+    print(f"Unused grids : {abs(left_grids - right_grids)}")
+
+
+def balance_grid_space(df):
+    # Recalculate group sizes
+    group_sizes = df.groupby('Priority').size()
+
+    # Get current side allocations
+    group_sides = df.groupby('Priority')['Side'].first()
+
+    # Count current grid usage
+    left_grids = sum(group_sizes[group_sides == 'Left']) + max(0, len(group_sizes[group_sides == 'Left']) - 1)
+    right_grids = sum(group_sizes[group_sides == 'Right']) + max(0, len(group_sizes[group_sides == 'Right']) - 1)
+
+    # Find underutilized side and available grids
+    if left_grids < right_grids:
+        available_side = 'Left'
+        unused_grids = right_grids - left_grids
+    else:
+        available_side = 'Right'
+        unused_grids = left_grids - right_grids
+
+    reassigned_priorities = []
+    for priority, size in group_sizes.items():
+        if group_sides[priority] != available_side:
+            group_grid_need = size + (1 if reassigned_priorities else 0)  # separator if not the first moved group
+            if group_grid_need <= unused_grids:
+                reassigned_priorities.append(priority)
+                unused_grids -= group_grid_need
+            else:
+                break
+
+    # Reassign sides in the DataFrame
+    df['Side'] = df.apply(
+        lambda row: available_side if row['Priority'] in reassigned_priorities else row['Side'],
+        axis=1
+    )
+    return df
+
+
 ##########################################
 
 
-
-def partitioning(df_last, max_rows_per_part=80):
-
-    df_Part_A = pd.DataFrame()
-    port_df_side_added = pd.DataFrame()
-    Port_Part_1 = pd.DataFrame()
-    Port_Balance_1 = pd.DataFrame()
-    Port_Balance_2 = pd.DataFrame()
-    Port_Balance_3 = pd.DataFrame()
-    Port_Balance_4 = pd.DataFrame()
-    Port_Balance_5 = pd.DataFrame()
-
-    # Step 1: Filter and sort by priority
-    df = filter_and_sort_by_priority(df_last)
-
-    # Step 2: Handle power pins
-    df['Side'] = df.apply(allocate_pin_side_by_priority.filter_out_power_pins, args=(df,), axis=1)
-    power_df = df[df['Side'].isin(['Left', 'Right'])]
-    df.loc[power_df.index, 'Side'] = power_df['Side']
-
-    print("Power DataFrame:", power_df)
-
-    # Step 3: Handle unfilled rows
-    unfilled_df = df[df['Side'].isna()]
-    number_of_rows_left = len(unfilled_df)
-    print(f"Length of unfilled DataFrame: {number_of_rows_left}")
-
-    # Initialize result tables
-    df_Part_A = pd.DataFrame()
-    port_df_side_added = pd.DataFrame()
-    port_tables = {}
-
-    if number_of_rows_left <= max_rows_per_part:
-        print("Only one extra Part")
-        df_Part_A = filter_and_sort_by_priority(unfilled_df)
-        df_Part_A['Side'] = df_Part_A.apply(lambda row: allocate_pin_side_by_priority(row, df_Part_A), axis=1)
-        df.loc[unfilled_df.index, 'Side'] = df_Part_A['Side'].values
-
-        if df['Side'].isna().sum() > 0:
-            print("Some pins are still unassigned:")
-            print(df[df['Side'].isna()])
-
-    elif number_of_rows_left > max_rows_per_part and any(unfilled_df['Priority'].str.startswith('P_Port')):
-        port_df = unfilled_df[unfilled_df['Priority'].str.startswith('P_Port')]
-        other_df = unfilled_df[~unfilled_df.index.isin(port_df.index)]
-
-        print(f"Port df length: {len(port_df)}, Other df length: {len(other_df)}")
-        combined_df = pd.concat([port_df, other_df], ignore_index=True)
-
-        # Add logic for splitting the data into parts based on the number of rows
-        num_parts = (len(combined_df) + max_rows_per_part - 1) // max_rows_per_part
-        for i in range(num_parts):
-            start = i * max_rows_per_part
-            end = start + max_rows_per_part
-            part_df = combined_df.iloc[start:end]
-            port_tables[f"Port Table - {i + 1}"] = part_df
-
-    else:
-        print("You will have to create more Parts manually.")
-
-    # Step 4: Build final DataFrame dictionary
-    df_dict = {
-        'Power Table': power_df,
-        'Part A Table': df_Part_A,
-        'Port Table': port_df_side_added,
-        'Others Table': df[df['Side'].isna()],
-        'Port Table - 1': Port_Part_1,
-        'Port Table - 2': Port_Balance_1,
-        'Port Table - 3': Port_Balance_2,
-        'Port Table - 4': Port_Balance_3,
-        'Port Table - 5': Port_Balance_4,
-        'Port Table - 6': Port_Balance_5
-    }
-
-    # Add Port Table - X dynamically if more parts are created
-    df_dict.update(port_tables)
-
-    # Final consistency check
-    total_processed = sum(len(v) for v in df_dict.values())
-    if total_processed != len(df):
-        print("Mismatch in total row count!")
-        print(f"Total processed: {total_processed}, Original: {len(df)}")
-
-    return df_dict
-
-#####################################################
-
-
-def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
+'''def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
     final_dfs = {}
 
     for title, df in dfs.items():
@@ -312,11 +299,79 @@ def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
         # Store the modified DataFrame in the final dictionary
         final_dfs[title] = final_df
     
+    return final_dfs'''
+
+def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
+    final_dfs = {}
+    table_keys = list(dfs.keys())
+
+    for idx, (title, df) in enumerate(dfs.items()):
+        df_copy = df.copy()
+
+        # Apply the side assignment logic to the DataFrame
+        df_new = assigning_side_for_less_than_80_pin_count(df_copy)
+
+        # If we are at the last table and it only has right-side entries, move the last I/O group from the previous table
+        if idx == len(dfs) - 1 and len(df_new) > 0:
+            print(f"\n🔍 Balancing check for last table: '{title}'")
+
+            # Count number of priority groups and side counts
+            priority_groups = df_new.groupby('Priority')
+            side_counts = df_new['Side'].value_counts(dropna=True)
+            unique_sides = side_counts.index.tolist()
+            print(f"📊 Current Side Counts: {side_counts.to_dict()}")
+
+            # If the current table has only the Right side populated
+            if len(unique_sides) == 1 and 'Right' in unique_sides:
+                print(f"⚖️ Only 'Right' side present in the last table. Moving the last I/O group from the previous table.")
+
+                # Get the last I/O group from the previous table (if it has a Right side)
+                if idx > 0:
+                    previous_df = final_dfs.get(table_keys[idx - 1], dfs[table_keys[idx - 1]])
+                    
+                    # Find the last I/O group by its Priority in the previous table's Right side
+                    last_priority_group = previous_df[previous_df['Side'] == 'Right']['Priority'].iloc[-1]
+                    print(f"🧩 Last I/O group from previous table: {last_priority_group}")
+
+                    # Get all pins belonging to that priority group and move them to the Left side of the current table
+                    pins_to_move = previous_df[previous_df['Priority'] == last_priority_group]
+
+                    # Remove these pins from the previous table
+                    previous_df = previous_df.drop(pins_to_move.index)
+
+                    # Add the I/O group to the current table's Left side
+                    pins_to_move = pins_to_move.assign(Side='Left')
+                    df_new = pd.concat([df_new, pins_to_move])
+
+                    # Reassign the side to the current table
+                    df_new = assigning_side_for_less_than_80_pin_count(df_new)
+
+                    # Update the previous table in final_dfs
+                    final_dfs[table_keys[idx - 1]] = previous_df
+
+                print(f"⚖️ The I/O group '{last_priority_group}' from the previous table has been moved to the Left side of the current table.")
+
+        # Now sort and finalize this table
+        sorted_dfs = []
+        for side in ['Left', 'Right']:
+            side_df = df_new[df_new['Side'] == side]
+            sorted_side_df = assigning_ascending_order_for_similar_group(side_df)
+            sorted_dfs.append(sorted_side_df)
+
+        final_df = pd.concat(sorted_dfs).reset_index(drop=True)
+        final_dfs[title] = final_df
+
     return final_dfs
+
+
+
 
 def assigning_side_for_less_than_80_pin_count(df):
     df_Part = filter_and_sort_by_priority(df)
     df_Part['Side'] = df_Part.apply(lambda row: allocate_pin_side_by_priority(row, df_Part), axis=1)
+
+    print_grid_spaces(df_Part)
+    df_Part = balance_grid_space(df_Part)
 
     return df_Part
 
@@ -324,7 +379,6 @@ def assigning_side_for_less_than_80_pin_count(df):
 
 
 def final_filter(df):
-
     # Step 1: Remove 'Grouping' column if it exists
     if "Grouping" in df.columns:
         df = df.drop(columns=["Grouping"])
@@ -336,14 +390,172 @@ def final_filter(df):
     # Step 3: Replace NaN with empty string
     df = df.fillna("")
 
-    # Step 4 & 5: Clean string values across the DataFrame
-    df = df.applymap(lambda x: str(x).strip().replace('  ', ' ').replace('\n', ' ').replace(' ', '_'))
-
-    # Step 6: Convert 'Pin Designator' values to integers if they are numeric
+    # Step 4: Convert 'Pin Designator' to int if possible BEFORE string cleanup
     if "Pin Designator" in df.columns:
         df["Pin Designator"] = df["Pin Designator"].apply(
-            lambda x: int(float(x)) if isinstance(x, (int, float)) or (isinstance(x, str) and x.replace('.', '', 1).isdigit()) else x
+            lambda x: int(float(x)) if isinstance(x, (int, float)) or 
+                      (isinstance(x, str) and x.replace('.', '', 1).isdigit()) 
+                      else x
         )
+
+    # Step 5: Clean string values only in object/string columns
+    for col in df.select_dtypes(include=["object"]).columns:
+        df[col] = df[col].apply(lambda x: str(x).strip().replace('  ', ' ')
+                                .replace('\n', ' ').replace(' ', '_'))
 
     return df
 
+
+#############################################
+
+def partitioning(df_last):
+    # Step 1: Filter and sort by priority
+    df = filter_and_sort_by_priority(df_last)
+
+    # Step 2: Apply filter for power pins and update the 'Side' column
+    df['Side'] = df.apply(filter_out_power_pins, args=(df,), axis=1)
+    power_df = df[df['Side'].isin(['Left', 'Right'])]
+    df.loc[power_df.index, 'Side'] = power_df['Side']
+
+    print("Power DataFrame:", power_df)
+
+    # Step 3: Handle unfilled rows
+    unfilled_df = df[df['Side'].isna()]
+    number_of_rows_left = len(unfilled_df)
+    print(f"Length of unfilled DataFrame: {number_of_rows_left}")
+
+    # Initialize result DataFrames
+    df_Part_A = pd.DataFrame()
+    port_df_side_added = pd.DataFrame()
+    Port_Balance_1 = pd.DataFrame()
+    Port_Balance_2 = pd.DataFrame()
+    Port_Part_1 = pd.DataFrame()
+
+    # Handle cases based on the number of unfilled rows
+    if number_of_rows_left <= 80:
+        print("Only one extra Part")
+
+        df_Part_A = filter_and_sort_by_priority(unfilled_df)
+        df_Part_A['Side'] = df_Part_A.apply(lambda row: allocate_pin_side_by_priority(row, df_Part_A), axis=1)
+        print_grid_spaces(df_Part_A)
+        df_Part_A = balance_grid_space(df_Part_A)
+
+        # Update unfilled rows in the original DataFrame
+        df.loc[unfilled_df.index, 'Side'] = df_Part_A['Side'].values
+
+        # Recheck unfilled rows
+        number_of_rows_left = df['Side'].isna().sum()
+        print(f"Length of unfilled DataFrame: {number_of_rows_left}")
+
+        if number_of_rows_left == 0:
+            print("All bins are filled. Initializing empty DataFrames.")
+        else:
+            print("Something is wrong")
+            print(f"Unfilled DataFrame: {df[df['Side'].isna()]}")
+    
+    elif number_of_rows_left > 80 and any(unfilled_df['Priority'].str.startswith('P_Port')):
+        port_df = unfilled_df[unfilled_df['Priority'].str.startswith('P_Port')]
+        other_unnamed_df = unfilled_df[~unfilled_df.index.isin(port_df.index)]
+
+        print(f"Port df length: {len(port_df)}")
+        print(f"Other unnamed df length: {len(other_unnamed_df)}")
+        
+        combined_df = pd.concat([port_df, other_unnamed_df], ignore_index=True)
+        overall_length = len(combined_df)
+        print(f"Overall length of combined DataFrame: {overall_length}")
+
+        if len(port_df) < 80:
+            port_df_side_added = assigning_side_for_less_than_80_pin_count(port_df)
+            df.loc[port_df.index, 'Side'] = port_df_side_added['Side'].values
+        elif 80 < len(combined_df) <= 160:
+            # Split into Port_Part_1 and Port_Balance_1
+            Port_Part_1, Port_Balance_1 = split_into_parts(combined_df, max_rows=80)
+        else:
+            # Split into three parts
+            Port_Part_1, Port_Balance_1, Port_Balance_2 = split_into_three_parts(combined_df, max_rows=80)
+    
+    else:
+        print("You will have to create more Parts")
+    
+    # Step 4: Construct the dictionary of DataFrames
+    df_dict = {
+        'Power Table': power_df,
+        'Part A Table': df_Part_A,
+        'Port Table': port_df_side_added,
+        'Others Table': df[df['Side'].isna()],
+        'Port Table - 1': Port_Part_1,
+        'Port Table - 2': Port_Balance_1,
+        'Port Table - 3': Port_Balance_2,
+    }
+
+    # Clean up the dictionary by removing empty DataFrames
+    df_dict = {key: value for key, value in df_dict.items() if not value.empty}
+
+# Final validation of splitting logic
+    total_rows_processed = sum(len(table) for table in df_dict.values())
+    if total_rows_processed != len(df):
+        print("❗Something went wrong with splitting into parts.")
+        print(f"🧮 Total rows processed: {total_rows_processed}, Original rows: {len(df)}")
+
+    return df_dict
+
+# Utility function to split into two parts
+def split_into_parts(df, max_rows=80):
+    grouped_indices = df.groupby('Priority').indices
+    part_1 = pd.DataFrame()
+    balance_1 = pd.DataFrame()
+    part_1_rows = 0
+
+    for priority, indices in grouped_indices.items():
+        group = df.loc[indices]
+        if part_1_rows + len(group) <= max_rows:
+            part_1 = pd.concat([part_1, group], ignore_index=True)
+            part_1_rows += len(group)
+        else:
+            balance_1 = pd.concat([balance_1, group], ignore_index=True)
+
+    return part_1, balance_1
+
+# Utility function to split into three parts
+def split_into_three_parts(df, max_rows=80):
+    grouped_indices = df.groupby('Priority').indices
+    part_1 = pd.DataFrame()
+    balance_1 = pd.DataFrame()
+    balance_2 = pd.DataFrame()
+    part_1_rows = 0
+    balance_1_rows = 0
+
+    for priority, indices in grouped_indices.items():
+        group = df.loc[indices]
+        if part_1_rows + len(group) <= max_rows:
+            part_1 = pd.concat([part_1, group], ignore_index=True)
+            part_1_rows += len(group)
+        elif balance_1_rows + len(group) <= max_rows:
+            balance_1 = pd.concat([balance_1, group], ignore_index=True)
+            balance_1_rows += len(group)
+        else:
+            balance_2 = pd.concat([balance_2, group], ignore_index=True)
+
+    return part_1, balance_1, balance_2
+
+def filter_out_power_pins(row, df):
+    df['Priority'] = df['Priority'].fillna('')
+
+    left_power_mask = df['Priority'].str.startswith('A')
+    #right_power_mask = df['Priority'].str.startswith('Z','Y')
+    right_power_mask = df['Priority'].str.startswith(('Z', 'Y'))
+
+
+    # Create lists of indices for left and right power using the masks
+    left_power = df.index[left_power_mask].tolist()
+    right_power = df.index[right_power_mask].tolist()
+
+    # Return based on the allocation
+    if row.name in left_power:
+        return 'Left'
+    elif row.name in right_power:
+        return 'Right'
+    else:
+        return None
+
+############################################

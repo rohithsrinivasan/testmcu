@@ -1,10 +1,9 @@
 {
     "priority_map": {
 
-
+      "Digital Power Supply Positive 3.3/1.8": "A_Digital Power Supply Positive 3.3/1.8",
       "Digital Power Supply Positive": "AA_Digital Power Supply Positive",
       "Reference Voltage Positive": "AB_Reference Voltage Positive",
-      "Digital Power Supply Positive 3.3/1.8": "AC_Digital Power Supply Positive 3.3/1.8",
       "Power Battery Management": "AD_Power Battery Management",
       "Analog Power Supply Positive": "AE_Analog Power Supply Positive",
       "Reference Voltage High Positive": "AF_Reference Voltage High Positive",
@@ -28,7 +27,6 @@
       "USB Power Supply Other": "AN_USB Power Supply Other",
       "RF Power Supply Positive": "AO_RF Power Supply Positive",
       "RF Power Supply Other": "AP_RF Power Supply Other",
-      "Reference Voltage Low Positive": "AQ_Reference Voltage Low Positive",
       "Voltage_Logic_Circuit_Positive" : "AR_Voltage_Logic_Circuit_Positive",
       "DIGITAL_RF_Positive" : "AS_DIGITAL_RF_Positive",
       "Miscellaneous Power": "AX_Miscellaneous Power",
@@ -58,6 +56,7 @@
       "DIGITAL_RF_Negetive": "ZCB_DIGITAL_RF_Negetive",
       "USB Power Supply Negative": "ZCD_USB Power Supply Negative",
       "RF Power Supply Negative": "ZCP_RF Power Supply Negative",
+      "Reference Voltage Low Positive": "ZR_Reference Voltage Low Positive",
       "Common Ground": "ZG_Common Ground",
       "Analog Power Supply Negative_VSS" : "ZZA_Analog Power Supply Negative_VSS",
       "Power Supply Epad Negative": "ZZE_Power Supply Epad Negative",
@@ -187,6 +186,7 @@
     "clock_map": {
       "Main_Clock": "CA_Main_Clocks/Oscillators",
       "External_Clock": "CB_External_Clocks/Oscillators",
+      "Clock_External_Base": "CE_Clock_External_Base",
       "Clock_Capacitor": "CC_External_Capacitive_Clocks/Oscillators",
       "Reference_Clk": "CD_Reference_Clocks/Oscillators",
       "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators",

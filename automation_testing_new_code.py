@@ -73,8 +73,8 @@ def automate_streamlit(input_dir, output_dir):
 
 if __name__ == "__main__":
     # Configure these paths (use raw strings for Windows)
-    input_directory = r"C:\Users\a5149169\Downloads\Microcontroller-testing\input_revised"
-    output_directory = r"C:\Users\a5149169\Downloads\Microcontroller-testing\Tool_Output"
+    input_directory = r"C:\Users\a5149169\Downloads\RA_Testing\input_revised_done"
+    output_directory = r"C:\Users\a5149169\Downloads\RA_Testing\Tool_Output_RA_Parts_Doingagain"
 
     # Create output directory if needed
     os.makedirs(output_directory, exist_ok=True)
