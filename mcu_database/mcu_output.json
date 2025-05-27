@@ -260,7 +260,7 @@
     "OUT9",
     "nOUT9"
   ],
-  "JTAG_Interface": [
+  "On_Chip_Oscillator": [
     "DCUTDO",
     "DETDO",
     "JTAG_TDO",

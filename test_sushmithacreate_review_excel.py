@@ -54,6 +54,6 @@ def process_json_folder(folder_path, excel_file_path):
 
 if __name__ == "__main__":
     # Replace 'path/to/your/json/folder' with the actual path to the folder
-    json_folder = 'pin_database\mcu_database_restructured'
-    output_excel_file = 'dupe_database_newest.xlsx'
+    json_folder = 'mcu_database'
+    output_excel_file = 'MCUMPU_database_23_05_newest.xlsx'
     process_json_folder(json_folder, output_excel_file)

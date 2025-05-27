@@ -54,6 +54,7 @@ def priority_order(row, df, priority_mapping_json):
     value = row['Grouping']
     index = row.name
     value_alternative = row['Pin Alternate Name']
+    pin_display_name = row['Pin Display Name']
 
     # Debug check (optional)
     if (row['Electrical Type'] == 'Input' and value.strip().startswith("Port")):
@@ -77,7 +78,13 @@ def priority_order(row, df, priority_mapping_json):
                 return priority
         return f"P_{value}"#"ZZ_Not_Assigned"  # Default if no swap condition matches
     
-    # 4. Generic Port handling (now only for non-Input cases)
+    # 4A. Special Case: Mixed PXX/PXXX in same group
+    if value.strip().startswith("Port"):
+        port_assignment = handle_mixed_port_assignment(pin_display_name, value, df)
+        if port_assignment:
+            return port_assignment
+  
+    # 4B. Generic Port handling (now only for non-Input cases)
     if value.strip().startswith("Port"):
         try:
             port_number = int(value.split(' ')[1])
@@ -105,6 +112,37 @@ def swap_pins_for_that_row(df, index, swap_conditions):
             df.loc[index, 'Pin Display Name'] = new_display
             df.loc[index, 'Pin Alternate Name'] = new_alternate
             return
+        
+
+def handle_mixed_port_assignment(pin_display_name, grouping_value, df):
+    """
+    Handles special case where a port group contains both PXX and PXXX pins.
+    Only shows debug output when mixed pins are found.
+    """
+    # Get all pins in the current group
+    group_pins = df[df['Grouping'] == grouping_value]['Pin Display Name'].tolist()
+    
+    # Check if group has both PXX (3 chars) and PXXX (4 chars)
+    has_pxx = any(len(pin) == 3 and pin.startswith('P') and pin[1:].isdigit() for pin in group_pins)
+    has_pxxx = any(len(pin) == 4 and pin.startswith('P') and pin[1:].isdigit() for pin in group_pins)
+    
+    if has_pxx and has_pxxx:
+        print(f"\n=== MIXED PORT GROUP DETECTED ===")
+        print(f"Group: {grouping_value}")
+        print(f"All pins: {group_pins}")
+        print(f"Current pin: {pin_display_name}")
+        
+        pin = pin_display_name
+        if len(pin) == 3 and pin.startswith('P'):  # PXX case
+            port_num = int(pin[1])  # Take first digit after P
+            print(f"Assigning {pin} to P_Port {port_num:02d} (PXX rule: first digit)")
+            return f"P_Port {port_num:02d}"
+        elif len(pin) == 4 and pin.startswith('P'):  # PXXX case
+            port_num = int(pin[1:3])  # Take first two digits after P
+            print(f"Assigning {pin} to P_Port {port_num:02d} (PXXX rule: first two digits)")
+            return f"P_Port {port_num:02d}"
+    
+    return None
         
 #######################################################
 
@@ -237,41 +275,60 @@ def print_grid_spaces(df):
 
 
 def balance_grid_space(df):
-    # Recalculate group sizes
+    print("\n=== DEBUG: Starting Revised balance_grid_space() ===")
+    
+    # Get group sizes and sides
     group_sizes = df.groupby('Priority').size()
-
-    # Get current side allocations
     group_sides = df.groupby('Priority')['Side'].first()
-
-    # Count current grid usage
-    left_grids = sum(group_sizes[group_sides == 'Left']) + max(0, len(group_sizes[group_sides == 'Left']) - 1)
-    right_grids = sum(group_sizes[group_sides == 'Right']) + max(0, len(group_sizes[group_sides == 'Right']) - 1)
-
-    # Find underutilized side and available grids
-    if left_grids < right_grids:
-        available_side = 'Left'
-        unused_grids = right_grids - left_grids
+    
+    print("\nInitial Side Assignments:")
+    print(group_sides)
+    
+    # Find the last left group and first right group
+    left_groups = group_sides[group_sides == 'Left'].index.tolist()
+    right_groups = group_sides[group_sides == 'Right'].index.tolist()
+    
+    if not left_groups or not right_groups:
+        return df  # No balancing needed
+    
+    last_left = left_groups[-1]  # e.g., 'P_Port_02'
+    first_right = right_groups[0]  # e.g., 'P_Port_03'
+    
+    print(f"\nTransition Boundary: Last Left = {last_left}, First Right = {first_right}")
+    
+    # Calculate current grid usage (including separators)
+    left_grids = sum(group_sizes[group_sides == 'Left']) + max(0, len(left_groups) - 1)
+    right_grids = sum(group_sizes[group_sides == 'Right']) + max(0, len(right_groups) - 1)
+    imbalance = abs(left_grids - right_grids)
+    
+    print(f"\nCurrent Grid Usage: Left={left_grids}, Right={right_grids} (Imbalance: {imbalance})")
+    
+    # Only proceed if imbalance > 1 (avoid unnecessary swaps)
+    if imbalance <= 1:
+        print("\nImbalance <= 1. No action taken.")
+        return df
+    
+    # Check if swapping last_left/first_right reduces imbalance
+    size_last_left = group_sizes[last_left]
+    size_first_right = group_sizes[first_right]
+    
+    # Simulate moving last_left to right
+    new_left_grids = left_grids - size_last_left - (1 if len(left_groups) > 1 else 0)
+    new_right_grids = right_grids + size_last_left + (1 if len(right_groups) > 0 else 0)
+    new_imbalance = abs(new_left_grids - new_right_grids)
+    
+    print(f"\nHypothetical Swap: Move {last_left} (Size={size_last_left}) to Right")
+    print(f"  → New Left Grids: {new_left_grids}, New Right Grids: {new_right_grids} (Imbalance: {new_imbalance})")
+    
+    # Only swap if it improves balance
+    if new_imbalance < imbalance:
+        print(f"  ✅ Swap APPROVED (Reduces imbalance from {imbalance} to {new_imbalance})")
+        df.loc[df['Priority'] == last_left, 'Side'] = 'Right'
     else:
-        available_side = 'Right'
-        unused_grids = left_grids - right_grids
-
-    reassigned_priorities = []
-    for priority, size in group_sizes.items():
-        if group_sides[priority] != available_side:
-            group_grid_need = size + (1 if reassigned_priorities else 0)  # separator if not the first moved group
-            if group_grid_need <= unused_grids:
-                reassigned_priorities.append(priority)
-                unused_grids -= group_grid_need
-            else:
-                break
-
-    # Reassign sides in the DataFrame
-    df['Side'] = df.apply(
-        lambda row: available_side if row['Priority'] in reassigned_priorities else row['Side'],
-        axis=1
-    )
+        print(f"  ❌ Swap REJECTED (No improvement)")
+    
+    print("\n=== DEBUG: Ending balance_grid_space() ===")
     return df
-
 
 ##########################################
 
