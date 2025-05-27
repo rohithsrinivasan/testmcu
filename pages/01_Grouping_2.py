@@ -222,10 +222,12 @@ else:
             "designator": "Pin Designator",
             "pin designator": "Pin Designator",
             "name": "Pin Display Name",
+            "Pin Display Name": "Pin Display Name",
             "pin name": "Pin Display Name",
             "electrical": "Electrical Type",
             "electrical type": "Electrical Type",
-            "description": "Pin Alternate Name"
+            "description": "Pin Alternate Name",
+            "Pin Alternate Name": "Pin Alternate Name"
         }
 
         # Find and rename matching columns
@@ -268,7 +270,7 @@ else:
         if warnings:
             for warning in warnings:
                 st.warning(warning)
-
+        #sample test
         df = df.dropna(how='all')
         df = df[~df.apply(lambda x: x.astype(str).str.isspace().all() or (x.astype(str) == '').all(), axis=1)]
         # Reset index again after cleaning
