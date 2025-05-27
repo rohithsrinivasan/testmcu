@@ -18,7 +18,7 @@ def header_intro():
     with col1:
         st.markdown("""
             <h1 style='color: #1c508c; font-size: 39px; vertical-align: top;'>SymbolGen</h1>
-            <p style='font-size: 16px;'>Testing version 1.3 - Last update 06/03/2025</p>
+            <p style='font-size: 16px;'>Testing version 1.3 - Last update 27/05/2025</p>
         """, unsafe_allow_html=True)
 
     with col3:
