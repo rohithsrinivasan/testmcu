@@ -195,50 +195,58 @@ def allocate_pin_side_by_priority(row, df):
             last_side = 'Right'
 
     # Optional: diagnostic output
-    print(f"\nPin Distribution:")
-    print(f"Total pins: {total_rows}")
-    print(f"Left side: {len(left)} pins")
-    print(f"Right side: {len(right)} pins")
+    # print(f"\nPin Distribution:")
+    # print(f"Total pins: {total_rows}")
+    # print(f"Left side: {len(left)} pins")
+    # print(f"Right side: {len(right)} pins")
 
     return 'Left' if row.name in left else 'Right'
 
-
-
-def sort_by_pin_name_pattern(df, column_name='Pin Display Name', ascending=True):
-    """
-    Sorts a DataFrame of pins based on naming patterns:
-    - Format 1: 'ABC_123' → sorted by base and number
-    - Format 2: 'PA15'   → sorted by letter prefix and number
-    - Otherwise falls back to simple alphabetical sorting
-    """
-
-    def extract_sort_keys(name):
-        # Match 'ABC_123' pattern
-        if '_' in name:
-            parts = name.rsplit('_', 1)
-            if parts[-1].isdigit():
-                return parts[0], int(parts[1])
-        # Match 'PA15' pattern
-        match = re.match(r'^([A-Za-z]+)(\d+)$', name)
-        if match:
-            return match.group(1), int(match.group(2))
-        # Fallback: treat whole name as base, no number
-        return name, float('inf')
-
-    df = df.copy()
-    df['__sort_keys__'] = df[column_name].apply(extract_sort_keys)
-
-    return df.sort_values(by='__sort_keys__', ascending=ascending).drop(columns='__sort_keys__')
+def extract_numeric_key(pin_name):
+    """Extract numeric part from pin name for sorting."""
+    if '_' in pin_name:
+        parts = pin_name.split('_')
+        try:
+            return int(parts[-1])
+        except (ValueError, IndexError):
+            return 999999
+    
+    match = re.match(r'^([A-Za-z]+)(\d+)$', pin_name)
+    if match:
+        return int(match.group(2))
+    
+    return 999999
 
 def assigning_ascending_order_for_similar_group(df, column_name='Pin Display Name'):
     """
-    Applies structured sorting to each Priority group in the DataFrame
-    using smart pin name sorting logic.
+    CORRECTED VERSION: Sort by Priority, then by numeric part of pin name.
+    This replaces your existing function completely.
     """
-    return df.groupby('Priority', group_keys=False).apply(
-        lambda group: sort_by_pin_name_pattern(group, column_name=column_name, ascending=True)
-    ).reset_index(drop=True)
+    df = df.copy()
+    
+    # Extract numeric sorting key
+    df['__numeric_key__'] = df[column_name].apply(extract_numeric_key)
+    
+    # Sort by Priority first, then by numeric key, then by pin name
+    sorted_df = df.sort_values(
+        by=['Priority', '__numeric_key__', column_name],
+        ascending=[True, True, True]
+    ).drop(columns=['__numeric_key__'])
+    
+    return sorted_df.reset_index(drop=True)
 
+# Your existing assigning_side_for_less_than_80_pin_count function 
+# should now work correctly with this replacement
+
+def assigning_side_for_less_than_80_pin_count(df):
+    df_Part = filter_and_sort_by_priority(df)
+    df_Part['Side'] = df_Part.apply(lambda row: allocate_pin_side_by_priority(row, df_Part), axis=1)
+
+    print_grid_spaces(df_Part)
+    df_Part = balance_grid_space(df_Part)
+    df_Part = assigning_ascending_order_for_similar_group(df_Part)  # Now uses corrected function
+
+    return df_Part.reset_index(drop=True)
 
 def print_grid_spaces(df):
     # Group pins by Priority
@@ -291,44 +299,55 @@ def balance_grid_space(df):
     if not left_groups or not right_groups:
         return df  # No balancing needed
     
-    last_left = left_groups[-1]  # e.g., 'P_Port_02'
-    first_right = right_groups[0]  # e.g., 'P_Port_03'
+    last_left = left_groups[-1]
+    first_right = right_groups[0]
     
     print(f"\nTransition Boundary: Last Left = {last_left}, First Right = {first_right}")
     
-    # Calculate current grid usage (including separators)
+    # Current grid usage (rows + separators)
     left_grids = sum(group_sizes[group_sides == 'Left']) + max(0, len(left_groups) - 1)
     right_grids = sum(group_sizes[group_sides == 'Right']) + max(0, len(right_groups) - 1)
     imbalance = abs(left_grids - right_grids)
     
     print(f"\nCurrent Grid Usage: Left={left_grids}, Right={right_grids} (Imbalance: {imbalance})")
     
-    # Only proceed if imbalance > 1 (avoid unnecessary swaps)
     if imbalance <= 1:
         print("\nImbalance <= 1. No action taken.")
         return df
-    
-    # Check if swapping last_left/first_right reduces imbalance
+
     size_last_left = group_sizes[last_left]
     size_first_right = group_sizes[first_right]
-    
-    # Simulate moving last_left to right
-    new_left_grids = left_grids - size_last_left - (1 if len(left_groups) > 1 else 0)
-    new_right_grids = right_grids + size_last_left + (1 if len(right_groups) > 0 else 0)
-    new_imbalance = abs(new_left_grids - new_right_grids)
-    
+
+    # Simulate moving last_left to Right
+    new_left_grids_LtoR = left_grids - size_last_left - (1 if len(left_groups) > 1 else 0)
+    new_right_grids_LtoR = right_grids + size_last_left + (1 if len(right_groups) > 0 else 0)
+    new_imbalance_LtoR = abs(new_left_grids_LtoR - new_right_grids_LtoR)
+
     print(f"\nHypothetical Swap: Move {last_left} (Size={size_last_left}) to Right")
-    print(f"  → New Left Grids: {new_left_grids}, New Right Grids: {new_right_grids} (Imbalance: {new_imbalance})")
-    
-    # Only swap if it improves balance
-    if new_imbalance < imbalance:
-        print(f"  ✅ Swap APPROVED (Reduces imbalance from {imbalance} to {new_imbalance})")
-        df.loc[df['Priority'] == last_left, 'Side'] = 'Right'
+    print(f"  → New Left Grids: {new_left_grids_LtoR}, New Right Grids: {new_right_grids_LtoR} (Imbalance: {new_imbalance_LtoR})")
+
+    # Simulate moving first_right to Left
+    new_left_grids_RtoL = left_grids + size_first_right + (1 if len(left_groups) > 0 else 0)
+    new_right_grids_RtoL = right_grids - size_first_right - (1 if len(right_groups) > 1 else 0)
+    new_imbalance_RtoL = abs(new_left_grids_RtoL - new_right_grids_RtoL)
+
+    print(f"\nHypothetical Swap: Move {first_right} (Size={size_first_right}) to Left")
+    print(f"  → New Left Grids: {new_left_grids_RtoL}, New Right Grids: {new_right_grids_RtoL} (Imbalance: {new_imbalance_RtoL})")
+
+    # Choose the better move
+    if new_imbalance_LtoR < imbalance or new_imbalance_RtoL < imbalance:
+        if new_imbalance_RtoL <= new_imbalance_LtoR:
+            print(f"  ✅ Swap APPROVED: Move {first_right} to Left (New Imbalance: {new_imbalance_RtoL})")
+            df.loc[df['Priority'] == first_right, 'Side'] = 'Left'
+        else:
+            print(f"  ✅ Swap APPROVED: Move {last_left} to Right (New Imbalance: {new_imbalance_LtoR})")
+            df.loc[df['Priority'] == last_left, 'Side'] = 'Right'
     else:
-        print(f"  ❌ Swap REJECTED (No improvement)")
+        print("  ❌ No swap improves the imbalance. No action taken.")
     
     print("\n=== DEBUG: Ending balance_grid_space() ===")
     return df
+
 
 ##########################################
 
@@ -364,9 +383,10 @@ def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
 
     for idx, (title, df) in enumerate(dfs.items()):
         df_copy = df.copy()
-
         # Apply the side assignment logic to the DataFrame
         df_new = assigning_side_for_less_than_80_pin_count(df_copy)
+
+        
 
         # If we are at the last table and it only has right-side entries, move the last I/O group from the previous table
         if idx == len(dfs) - 1 and len(df_new) > 0:
@@ -421,16 +441,15 @@ def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
     return final_dfs
 
 
-
-
 def assigning_side_for_less_than_80_pin_count(df):
     df_Part = filter_and_sort_by_priority(df)
     df_Part['Side'] = df_Part.apply(lambda row: allocate_pin_side_by_priority(row, df_Part), axis=1)
 
     print_grid_spaces(df_Part)
     df_Part = balance_grid_space(df_Part)
+    df_Part = assigning_ascending_order_for_similar_group(df_Part)
 
-    return df_Part
+    return df_Part.reset_index(drop=True)
 
 #########################################
 
@@ -487,6 +506,9 @@ def partitioning(df_last):
     Port_Balance_1 = pd.DataFrame()
     Port_Balance_2 = pd.DataFrame()
     Port_Part_1 = pd.DataFrame()
+    gpio_1 = pd.DataFrame()
+    gpio_2 = pd.DataFrame()
+    gpio_3 = pd.DataFrame()
 
     # Handle cases based on the number of unfilled rows
     if number_of_rows_left <= 80:
@@ -533,6 +555,8 @@ def partitioning(df_last):
     
     else:
         print("You will have to create more Parts")
+        # Run Case 1 inside else
+        gpio_1, gpio_2, gpio_3 = test_one_GPIOcase(unfilled_df, df)
     
     # Step 4: Construct the dictionary of DataFrames
     df_dict = {
@@ -544,6 +568,12 @@ def partitioning(df_last):
         'Port Table - 2': Port_Balance_1,
         'Port Table - 3': Port_Balance_2,
     }
+    # Test Case 1 : Conditionally add GPIO tables if returned
+    if any(tbl is not None for tbl in [gpio_1, gpio_2, gpio_3]):
+        for i, tbl in enumerate([gpio_1, gpio_2, gpio_3], start=1):
+            if tbl is not None:
+                df_dict[f'GPIO Table - {i}'] = tbl
+
 
     # Clean up the dictionary by removing empty DataFrames
     df_dict = {key: value for key, value in df_dict.items() if not value.empty}
@@ -614,5 +644,37 @@ def filter_out_power_pins(row, df):
         return 'Right'
     else:
         return None
+    
+
+def test_one_GPIOcase(unfilled_df, df):
+    print("Test One - Seeing if there are more pins that are GPIO")
+
+    gpio_mask = unfilled_df['Priority'].str.contains('GPIO_Pins', na=False)
+    gpio_df = unfilled_df[gpio_mask]
+
+    if gpio_df.empty:
+        print("No GPIO Pins found — passing for now.")
+        return None, None, None
+
+    gpio_count = len(gpio_df)
+    print(f"Found {gpio_count} GPIO Pins")
+
+    other_unnamed_df = unfilled_df[~unfilled_df.index.isin(gpio_df.index)]        
+    combined_df = pd.concat([gpio_df, other_unnamed_df], ignore_index=True)
+
+    if 40 < len(gpio_df) < 80:
+        port_df_side_added = assigning_side_for_less_than_80_pin_count(gpio_df)
+        df.loc[gpio_df.index, 'Side'] = port_df_side_added['Side'].values
+        return port_df_side_added, None, None
+
+    elif 80 < len(combined_df) <= 160:
+        Port_Part_1, Port_Balance_1 = split_into_parts(combined_df, max_rows=80)
+        return Port_Part_1, Port_Balance_1, None
+
+    else:
+        Port_Part_1, Port_Balance_1, Port_Balance_2 = split_into_three_parts(combined_df, max_rows=80)
+        return Port_Part_1, Port_Balance_1, Port_Balance_2
+
+
 
 ############################################

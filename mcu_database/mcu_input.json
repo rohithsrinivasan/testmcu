@@ -888,6 +888,7 @@
     "DCUTRSTN#",
     "JTAG_TCK",
     "JTAG_TDI",
+    "JTAG_TDO",
     "JTAG_TRST_N"
   ],
   "KEYPAD_INPUTS": [

@@ -263,7 +263,6 @@
   "On_Chip_Oscillator": [
     "DCUTDO",
     "DETDO",
-    "JTAG_TDO",
     "TDO"
   ],
   "LED_Output": [

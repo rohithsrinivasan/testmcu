@@ -65,13 +65,14 @@ def part_number_details(input_part_number,input_buffer):
     st.text(f"Before_merging_flag : {Before_merging_flag}")
     if Before_merging_flag:
         merged_df = part_number_details_functions.merge_tables(dfs)
-        #st.dataframe(merged_df)
+        st.dataframe(merged_df)
         part_number,number_of_pins,package_type,package_code = part_number_details_functions.search_for_part_number_in_the_indexing_table(merged_df, input_part_number)
         if not all(value is not None for value in (part_number, number_of_pins, package_type, package_code)):
             st.text(f" User entered Part Number is not matching, please select one from the below")
             part_number, number_of_pins, package_type, package_code = part_number_details_functions.create_selectbox_for_user_to_select(merged_df)
 
-        #st.caption(f"Part Number : {part_number}, Number of Pins: {number_of_pins}, Package: {package_type}, Package Code: {package_code}")
+        st.caption(f"Part Number : {part_number}, Number of Pins: {number_of_pins}, Package: {package_type}, Package Code: {package_code}")
+        number_of_pins = int(number_of_pins)
         st.caption(f"Part Info : {number_of_pins} - {package_type}")
         #st.divider()
 
