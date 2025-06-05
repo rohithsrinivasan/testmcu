@@ -98,7 +98,7 @@ def priority_order(row, df, priority_mapping_json):
     # 5. Default case
     return None
 
-def swap_pins_for_that_row(df, index, swap_conditions):
+'''def swap_pins_for_that_row(df, index, swap_conditions):
     current_display = df.loc[index, 'Pin Display Name']
     current_alternate = df.loc[index, 'Pin Alternate Name']
     
@@ -115,7 +115,36 @@ def swap_pins_for_that_row(df, index, swap_conditions):
             df.loc[index, 'Pin Display Name'] = new_display
             df.loc[index, 'Pin Alternate Name'] = new_alternate
             return
+'''
         
+
+def swap_pins_for_that_row(df, index, swap_conditions):
+    current_display = df.loc[index, 'Pin Display Name']
+    current_alternate = df.loc[index, 'Pin Alternate Name']
+    
+    # Find which swap_condition key is present in the alternate name
+    for key in swap_conditions.keys():
+        if key in current_alternate:
+            # Extract the matching part (e.g., "X1" from "P121/X1/INTP1")
+            matched_part = key
+            
+            # Swap ONLY the matched part with display name
+            new_alternate = current_alternate.replace(matched_part, current_display)
+            new_display = matched_part
+            
+            df.loc[index, 'Pin Display Name'] = new_display
+            df.loc[index, 'Pin Alternate Name'] = new_alternate
+            
+            # Update Electrical Type based on matched part
+            if matched_part in ["X1", "X2", "XT1", "XT2", "MD", "NMI", "//RESET", "RESET"]:
+                df.loc[index, 'Electrical Type'] = 'Input'
+            elif matched_part == "RESOUT":
+                df.loc[index, 'Electrical Type'] = 'Output'
+            elif matched_part in ["VREF", "VRFF"]:
+                df.loc[index, 'Electrical Type'] = 'Power'
+            # Else keep electrical type as it is (no change needed)
+            
+            return
 
 def handle_mixed_port_assignment(pin_display_name, grouping_value, df):
     """
