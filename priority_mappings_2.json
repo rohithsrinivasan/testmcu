@@ -2,10 +2,10 @@
     "priority_map": {
 
       "Digital Power Supply Positive 3.3/1.8": "A_Digital Power Supply Positive 3.3/1.8",
+      "Analog Power Supply Positive": "AAB_Analog Power Supply Positive",
       "Digital Power Supply Positive": "AA_Digital Power Supply Positive",
       "Reference Voltage Positive": "AB_Reference Voltage Positive",
       "Power Battery Management": "AD_Power Battery Management",
-      "Analog Power Supply Positive": "AE_Analog Power Supply Positive",
       "Reference Voltage High Positive": "AF_Reference Voltage High Positive",
       "Digital Power Supply Positive PVCC": "AGA_Digital Power Supply Positive PVCC",
       "Digital Power Supply Positive PVDD": "AGB_Digital Power Supply Positive PVDD",

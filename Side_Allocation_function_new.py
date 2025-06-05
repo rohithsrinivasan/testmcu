@@ -122,9 +122,11 @@ def swap_pins_for_that_row(df, index, swap_conditions):
     current_display = df.loc[index, 'Pin Display Name']
     current_alternate = df.loc[index, 'Pin Alternate Name']
     
-    # Find which swap_condition key is present in the alternate name
+    # Find which swap_condition key is present in the alternate name as a separate pin
     for key in swap_conditions.keys():
-        if key in current_alternate:
+        # Split by '/' to get individual pin names and check if key matches exactly
+        pin_names = current_alternate.split('/')
+        if key in pin_names:
             # Extract the matching part (e.g., "X1" from "P121/X1/INTP1")
             matched_part = key
             
