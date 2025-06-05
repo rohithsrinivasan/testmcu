@@ -71,15 +71,21 @@ def priority_order(row, df, priority_mapping_json):
     
     # 3. Input + Port check (MUST COME BEFORE GENERIC PORT HANDLING!)
     #if row['Electrical Type'] == 'Input' and value.strip().startswith("Port"):
+    #if (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port"):
     if (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port"):
         for alt_name, priority in mappings['swap_conditions'].items():
-            #print(f"Checking if '{alt_name}' is in '{str(value_alternative)}'")
-            if alt_name in str(value_alternative):
-                print(f"MATCH FOUND! '{alt_name}' found in '{value_alternative}' with priority {priority}")
+            # Use the SAME exact matching logic as in the swap function
+            pin_names = str(value_alternative).split('/')
+            if alt_name in pin_names:
+                print(f"EXACT MATCH FOUND! '{alt_name}' found as separate pin in '{value_alternative}' with priority {priority}")
                 # --- Define swap function OUTSIDE the loop ---
                 swap_pins_for_that_row(df, index, mappings['swap_conditions'])
                 return priority
-        return f"P_{value}"#"ZZ_Not_Assigned"  # Default if no swap condition matches
+            else:
+                print(f"No exact match: '{alt_name}' not found as separate pin in '{value_alternative}'")
+        
+        print(f"No exact matches found. Returning P_{value}")
+        return f"P_{value}"
     
     # 4A. Special Case: Mixed PXX/PXXX in same group
     if value.strip().startswith("Port"):
