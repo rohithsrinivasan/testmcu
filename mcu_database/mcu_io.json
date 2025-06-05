@@ -3534,7 +3534,8 @@
     "LY",
     "LZ",
     "SWCLK",
-    "SWDIO"
+    "SWDIO",
+    "SWO"
   ],
   "TODN_Pins": [
     "TODN0",

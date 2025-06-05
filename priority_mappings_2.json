@@ -222,6 +222,19 @@
       "VRFF": "ABA_Power_Ref_Positive",
       "RESOUT" : "SA_System_Output",
       "\\RESET" : "BA_Reset",
-      "RESET" : "BA_Reset"
+      "RESET" : "BA_Reset",
+      "SDA" : "IOC_I2C Interface",
+      "SCL" : "IOC_I2C Interface",
+      "TMS" : "DO_On_Chip_Oscillator",
+      "TDI" : "DO_On_Chip_Oscillator",
+      "TDK" : "DO_On_Chip_Oscillator",
+      "TDO" : "DO_On_Chip_Oscillator",
+      "SWCLK": "Switching Node",
+      "SWDIO": "Switching Node",
+      "SWO" : "Switching Node",
+      "TDATA0":"SMC_TEST_DATA_OUTPUTS",
+      "TADAT1": "SMC_TEST_DATA_OUTPUTS",
+      "TDATA2": "SMC_TEST_DATA_OUTPUTS",
+      "TDATA3": "SMC_TEST_DATA_OUTPUTS"
     }
   }
