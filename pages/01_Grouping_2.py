@@ -251,6 +251,7 @@ else:
         if "Pin Alternate Name" in df.columns:
             df = df[~df["Pin Alternate Name"].str.contains("renesas", case=False, na=False)]
             df = df[~df["Pin Alternate Name"].str.contains("Cortex", case=False, na=False)]
+            df = df[~df["Pin Alternate Name"].str.contains("operation", case=False, na=False)]
 
         # Always render the toggle switch
         testing_electrical_type = st.toggle("Testing Electrical Type", value=False)
