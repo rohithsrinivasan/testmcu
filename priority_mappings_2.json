@@ -33,7 +33,6 @@
 
       "No Connect": "X_No Connect",
 
-      "Analog Power Supply Negative_AVSS" : "ZAB_Analog Power Supply Negative_AVSS",
       "Analog Power Supply Negative_IO": "ZAD_Analog Power Supply Negative_IO",
       "Analog Power Supply Negative_Others": "ZAE_Analog Power Supply Negative_Special",
       "Analog Power Supply Negative_Clocks" : "ZAF_Analog Power Supply Negative_Clocks",
@@ -58,6 +57,7 @@
       "RF Power Supply Negative": "ZCP_RF Power Supply Negative",
       "Reference Voltage Low Positive": "ZR_Reference Voltage Low Positive",
       "Common Ground": "ZG_Common Ground",
+      "Analog Power Supply Negative_AVSS" : "ZY_Analog Power Supply Negative_AVSS",
       "Analog Power Supply Negative_VSS" : "ZZA_Analog Power Supply Negative_VSS",
       "Power Supply Epad Negative": "ZZE_Power Supply Epad Negative",
 
@@ -103,7 +103,8 @@
       "ADC2_Channel_Group_3" : "FFD_ADC2_Channel_Group_3",
       "Generic_ADC_Channel" : "FDD_Generic_ADC_Channels",
       "Analog_Inputs_Generic" : "FDE_Analog_Inputs_Generic",
-      "Analog Pins Port" : "FDF_Analog Pins Port",
+      "Analog Pins Port" : "FDF_Analog_Port_Others",
+      "Port Analog 0": "FDF_Analog_Port_0",
       "Analog_Inputs_AIN" : "FGA_Analog_Inputs_AIN",
       "Analog_Inputs_ANI" : "FGB_Analog_Inputs_ANI",
       "Analog_Inputs_ANI_Indexed" : "FGC_Analog_Inputs_ANI_Indexed",
@@ -137,7 +138,6 @@
       "Data Bus": "IOK_Data Bus",
       "RDC_OUTPUTS" : "IOKC_RDC_OUTPUTS",
       "Analog_Input_Pins": "IOL_Analog_Input_Pins",
-      "Port Analog 0": "IOM_Port Analog 0",
       "LCD Pins": "ION_LCD Pins",
       "Switching Node": "IOM_Switching Node",
       "DDR3L Pins": "IOO_DDR3L Pins",
@@ -207,17 +207,21 @@
       "Clock_Capacitor": "CC_External_Capacitive_Clocks/Oscillators",
       "Reference_Clk": "CD_Reference_Clocks/Oscillators",
       "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators",
-      "PCIe_Reference_Clocks" : "FFA_PCIe_Reference_Clocks",
-      "Generic_Reference_Clocks" : "FFB_Generic_Reference_Clocks"
+      "PCIe_Reference_Clocks" : "CY_PCIe_Reference_Clocks",
+      "Generic_Reference_Clocks" : "CZ_Generic_Reference_Clocks"
 
     },
     "swap_conditions": {
       "X1": "CA_Main_Clocks/Oscillators",
       "X2": "CA_Main_Clocks/Oscillators",
-      "XT": "CB_External_Clocks/Oscillators",
+      "XT1": "CB_External_Clocks/Oscillators",
+      "XT2": "CB_External_Clocks/Oscillators",
       "MD": "E_ModePins",
       "NMI": "I_Interrupts",
       "VREF": "ABA_Power_Ref_Positive",
-      "VRFF": "ABA_Power_Ref_Positive"
+      "VRFF": "ABA_Power_Ref_Positive",
+      "RESOUT" : "SA_System_Output",
+      "\\RESET" : "BA_Reset",
+      "RESET" : "BA_Reset"
     }
   }
