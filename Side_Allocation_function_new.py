@@ -81,10 +81,10 @@ def priority_order(row, df, priority_mapping_json):
                 # --- Define swap function OUTSIDE the loop ---
                 swap_pins_for_that_row(df, index, mappings['swap_conditions'])
                 return priority
-            else:
-                print(f"No exact match: '{alt_name}' not found as separate pin in '{value_alternative}'")
+            #else:
+                #print(f"No exact match: '{alt_name}' not found as separate pin in '{value_alternative}'")
         
-        print(f"No exact matches found. Returning P_{value}")
+        #print(f"No exact matches found. Returning P_{value}")
         return f"P_{value}"
     
     # 4A. Special Case: Mixed PXX/PXXX in same group
@@ -102,6 +102,81 @@ def priority_order(row, df, priority_mapping_json):
             return f"P_Port {value.split(' ')[1]}"
     
     # 5. Default case
+    return None
+
+def priority_order(row, df, priority_mapping_json):
+    with open(priority_mapping_json, 'r') as file:
+        mappings = json.load(file)
+
+    value = row['Grouping']
+    index = row.name
+    value_alternative = row['Pin Alternate Name']
+    pin_display_name = row['Pin Display Name']
+
+    print(f"\n--- DEBUG: Processing {pin_display_name} ---")
+    print(f"Grouping: '{value}'")
+    print(f"Electrical Type: '{row['Electrical Type']}'")
+    print(f"Pin Alternate Name: '{value_alternative}'")
+
+    # 1. Highest priority: Direct mapping
+    if value in mappings['priority_map']:
+        print(f"Step 1: Direct mapping found - returning {mappings['priority_map'][value]}")
+        return mappings['priority_map'][value]
+    else:
+        print("Step 1: No direct mapping found")
+    
+    # 2. Clock-related cases
+    clock_found = False
+    for clock_type, priority in mappings['clock_map'].items():
+        if clock_type in value:
+            print(f"Step 2: Clock mapping found - returning {priority}")
+            return priority
+    print("Step 2: No clock mapping found")
+    
+    # 3. Input + Port check 
+    input_port_condition = (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port")
+    print(f"Step 3: Input/IO + Port condition: {input_port_condition}")
+    print(f"  - Electrical Type check: {row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O'}")
+    print(f"  - Port check: {value.strip().startswith('Port')}")
+    
+    if input_port_condition:
+        print("Step 3: Entering Input/IO + Port handling")
+        
+        # 3A. FIRST: Check for mixed port assignment (PXX vs PXXX)
+        print("Step 3A: Checking for mixed port assignment before swap conditions")
+        port_assignment = handle_mixed_port_assignment(pin_display_name, value, df)
+        if port_assignment:
+            print(f"Step 3A: Mixed port assignment returned: {port_assignment}")
+            return port_assignment
+        
+        # 3B. THEN: Check swap conditions
+        for alt_name, priority in mappings['swap_conditions'].items():
+            pin_names = str(value_alternative).split('/')
+            if alt_name in pin_names:
+                print(f"EXACT MATCH FOUND! '{alt_name}' found in '{value_alternative}' with priority {priority}")
+                swap_pins_for_that_row(df, index, mappings['swap_conditions'])
+                return priority
+        
+        print(f"Step 3: No swap conditions met, returning P_{value}")
+        return f"P_{value}"
+  
+    # 4B. Generic Port handling 
+    generic_port_condition = value.strip().startswith("Port")
+    print(f"Step 4B: Generic port condition: {generic_port_condition}")
+    
+    if generic_port_condition:
+        try:
+            port_number = int(value.split(' ')[1])
+            result = f"P_Port {port_number:02d}"
+            print(f"Step 4B: Generic port handling - returning {result}")
+            return result
+        except ValueError:
+            result = f"P_Port {value.split(' ')[1]}"
+            print(f"Step 4B: Generic port handling (ValueError) - returning {result}")
+            return result
+    
+    # 5. Default case
+    print("Step 5: Returning None (default case)")
     return None
 
 '''def swap_pins_for_that_row(df, index, swap_conditions):
