@@ -56,74 +56,17 @@ def priority_order(row, df, priority_mapping_json):
     value_alternative = row['Pin Alternate Name']
     pin_display_name = row['Pin Display Name']
 
-    # Debug check (optional)
-    if (row['Electrical Type'] == 'Input' and value.strip().startswith("Port")):
-        print(f"After Swapping : {value}, Alt Name: {value_alternative}")
+    # print(f"\n--- DEBUG: Processing {pin_display_name} ---")
+    # print(f"Grouping: '{value}'")
+    # print(f"Electrical Type: '{row['Electrical Type']}'")
+    # print(f"Pin Alternate Name: '{value_alternative}'")
 
     # 1. Highest priority: Direct mapping
     if value in mappings['priority_map']:
+        #print(f"Step 1: Direct mapping found - returning {mappings['priority_map'][value]}")
         return mappings['priority_map'][value]
-    
-    # 2. Clock-related cases
-    for clock_type, priority in mappings['clock_map'].items():
-        if clock_type in value:
-            return priority
-    
-    # 3. Input + Port check (MUST COME BEFORE GENERIC PORT HANDLING!)
-    #if row['Electrical Type'] == 'Input' and value.strip().startswith("Port"):
-    #if (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port"):
-    if (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port"):
-        for alt_name, priority in mappings['swap_conditions'].items():
-            # Use the SAME exact matching logic as in the swap function
-            pin_names = str(value_alternative).split('/')
-            if alt_name in pin_names:
-                print(f"EXACT MATCH FOUND! '{alt_name}' found as separate pin in '{value_alternative}' with priority {priority}")
-                # --- Define swap function OUTSIDE the loop ---
-                swap_pins_for_that_row(df, index, mappings['swap_conditions'])
-                return priority
-            #else:
-                #print(f"No exact match: '{alt_name}' not found as separate pin in '{value_alternative}'")
-        
-        #print(f"No exact matches found. Returning P_{value}")
-        return f"P_{value}"
-    
-    # 4A. Special Case: Mixed PXX/PXXX in same group
-    if value.strip().startswith("Port"):
-        port_assignment = handle_mixed_port_assignment(pin_display_name, value, df)
-        if port_assignment:
-            return port_assignment
-  
-    # 4B. Generic Port handling (now only for non-Input cases)
-    if value.strip().startswith("Port"):
-        try:
-            port_number = int(value.split(' ')[1])
-            return f"P_Port {port_number:02d}"
-        except ValueError:
-            return f"P_Port {value.split(' ')[1]}"
-    
-    # 5. Default case
-    return None
-
-def priority_order(row, df, priority_mapping_json):
-    with open(priority_mapping_json, 'r') as file:
-        mappings = json.load(file)
-
-    value = row['Grouping']
-    index = row.name
-    value_alternative = row['Pin Alternate Name']
-    pin_display_name = row['Pin Display Name']
-
-    print(f"\n--- DEBUG: Processing {pin_display_name} ---")
-    print(f"Grouping: '{value}'")
-    print(f"Electrical Type: '{row['Electrical Type']}'")
-    print(f"Pin Alternate Name: '{value_alternative}'")
-
-    # 1. Highest priority: Direct mapping
-    if value in mappings['priority_map']:
-        print(f"Step 1: Direct mapping found - returning {mappings['priority_map'][value]}")
-        return mappings['priority_map'][value]
-    else:
-        print("Step 1: No direct mapping found")
+    #else:
+    #    print("Step 1: No direct mapping found")
     
     # 2. Clock-related cases
     clock_found = False
@@ -131,19 +74,19 @@ def priority_order(row, df, priority_mapping_json):
         if clock_type in value:
             print(f"Step 2: Clock mapping found - returning {priority}")
             return priority
-    print("Step 2: No clock mapping found")
+    #print("Step 2: No clock mapping found")
     
     # 3. Input + Port check 
     input_port_condition = (row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O') and value.strip().startswith("Port")
-    print(f"Step 3: Input/IO + Port condition: {input_port_condition}")
-    print(f"  - Electrical Type check: {row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O'}")
-    print(f"  - Port check: {value.strip().startswith('Port')}")
+    #print(f"Step 3: Input/IO + Port condition: {input_port_condition}")
+    #print(f"  - Electrical Type check: {row['Electrical Type'] == 'Input' or row['Electrical Type'] == 'I/O'}")
+    #print(f"  - Port check: {value.strip().startswith('Port')}")
     
     if input_port_condition:
-        print("Step 3: Entering Input/IO + Port handling")
+        #print("Step 3: Entering Input/IO + Port handling")
         
         # 3A. FIRST: Check for mixed port assignment (PXX vs PXXX)
-        print("Step 3A: Checking for mixed port assignment before swap conditions")
+        #print("Step 3A: Checking for mixed port assignment before swap conditions")
         port_assignment = handle_mixed_port_assignment(pin_display_name, value, df)
         if port_assignment:
             print(f"Step 3A: Mixed port assignment returned: {port_assignment}")
@@ -157,26 +100,26 @@ def priority_order(row, df, priority_mapping_json):
                 swap_pins_for_that_row(df, index, mappings['swap_conditions'])
                 return priority
         
-        print(f"Step 3: No swap conditions met, returning P_{value}")
+        #print(f"Step 3: No swap conditions met, returning P_{value}")
         return f"P_{value}"
   
     # 4B. Generic Port handling 
     generic_port_condition = value.strip().startswith("Port")
-    print(f"Step 4B: Generic port condition: {generic_port_condition}")
+    #print(f"Step 4B: Generic port condition: {generic_port_condition}")
     
     if generic_port_condition:
         try:
             port_number = int(value.split(' ')[1])
             result = f"P_Port {port_number:02d}"
-            print(f"Step 4B: Generic port handling - returning {result}")
+            #print(f"Step 4B: Generic port handling - returning {result}")
             return result
         except ValueError:
             result = f"P_Port {value.split(' ')[1]}"
-            print(f"Step 4B: Generic port handling (ValueError) - returning {result}")
+            #print(f"Step 4B: Generic port handling (ValueError) - returning {result}")
             return result
     
     # 5. Default case
-    print("Step 5: Returning None (default case)")
+    #print("Step 5: Returning None (default case)")
     return None
 
 '''def swap_pins_for_that_row(df, index, swap_conditions):
@@ -294,8 +237,6 @@ def allocate_pin_side_by_priority(row, df):
     avoids splitting Priority groups. Returns an error message if total pins exceed 80.
     """
     total_rows = len(df)
-    if total_rows > 80:
-        return "Some error Occurred"
 
     grouped_indices = df.groupby('Priority').indices
     left, right = [], []
@@ -500,63 +441,20 @@ def assigning_side_for_priority_for_dataframes_within_dictionary(dfs):
         df_copy = df.copy()
         # Apply the side assignment logic to the DataFrame
         df_new = assigning_side_for_less_than_80_pin_count(df_copy)
-
         
+        # (Other logic may go here...)
 
-        # If we are at the last table and it only has right-side entries, move the last I/O group from the previous table
-        if idx == len(dfs) - 1 and len(df_new) > 0:
-            print(f"\n🔍 Balancing check for last table: '{title}'")
-
-            # Count number of priority groups and side counts
-            priority_groups = df_new.groupby('Priority')
-            side_counts = df_new['Side'].value_counts(dropna=True)
-            unique_sides = side_counts.index.tolist()
-            print(f"📊 Current Side Counts: {side_counts.to_dict()}")
-
-            # If the current table has only the Right side populated
-            if len(unique_sides) == 1 and 'Right' in unique_sides:
-                print(f"⚖️ Only 'Right' side present in the last table. Moving the last I/O group from the previous table.")
-
-                # Get the last I/O group from the previous table (if it has a Right side)
-                if idx > 0:
-                    previous_df = final_dfs.get(table_keys[idx - 1], dfs[table_keys[idx - 1]])
-                    
-                    # Find the last I/O group by its Priority in the previous table's Right side
-                    last_priority_group = previous_df[previous_df['Side'] == 'Right']['Priority'].iloc[-1]
-                    print(f"🧩 Last I/O group from previous table: {last_priority_group}")
-
-                    # Get all pins belonging to that priority group and move them to the Left side of the current table
-                    pins_to_move = previous_df[previous_df['Priority'] == last_priority_group]
-
-                    # Remove these pins from the previous table
-                    previous_df = previous_df.drop(pins_to_move.index)
-
-                    # Add the I/O group to the current table's Left side
-                    pins_to_move = pins_to_move.assign(Side='Left')
-                    df_new = pd.concat([df_new, pins_to_move])
-
-                    # Reassign the side to the current table
-                    df_new = assigning_side_for_less_than_80_pin_count(df_new)
-
-                    # Update the previous table in final_dfs
-                    final_dfs[table_keys[idx - 1]] = previous_df
-
-                print(f"⚖️ The I/O group '{last_priority_group}' from the previous table has been moved to the Left side of the current table.")
-
-        # Now sort and finalize this table
-        sorted_dfs = []
-        for side in ['Left', 'Right']:
-            side_df = df_new[df_new['Side'] == side]
-            sorted_side_df = assigning_ascending_order_for_similar_group(side_df)
-            sorted_dfs.append(sorted_side_df)
-
-        final_df = pd.concat(sorted_dfs).reset_index(drop=True)
-        final_dfs[title] = final_df
+        # Store final result for this part
+        final_dfs[title] = df_new
 
     return final_dfs
 
 
+
 def assigning_side_for_less_than_80_pin_count(df):
+    if df.empty:
+        print("Warning: Empty DataFrame passed to assigning_side_for_less_than_80_pin_count")
+        return df
     df_Part = filter_and_sort_by_priority(df)
     df_Part['Side'] = df_Part.apply(lambda row: allocate_pin_side_by_priority(row, df_Part), axis=1)
 
@@ -599,7 +497,7 @@ def final_filter(df):
 
 #############################################
 
-def partitioning(df_last):
+def partitioning(df_last, Strict_Population):
     # Step 1: Filter and sort by priority
     df = filter_and_sort_by_priority(df_last)
 
@@ -658,7 +556,7 @@ def partitioning(df_last):
         overall_length = len(combined_df)
         print(f"Overall length of combined DataFrame: {overall_length}")
 
-        if len(port_df) < 80:
+        ''' if len(port_df) < 80:
             port_df_side_added = assigning_side_for_less_than_80_pin_count(port_df)
             df.loc[port_df.index, 'Side'] = port_df_side_added['Side'].values
         elif 80 < len(combined_df) <= 160:
@@ -666,12 +564,41 @@ def partitioning(df_last):
             Port_Part_1, Port_Balance_1 = split_into_parts(combined_df, max_rows=80)
         else:
             # Split into three parts
-            Port_Part_1, Port_Balance_1, Port_Balance_2 = split_into_three_parts(combined_df, max_rows=80)
+            Port_Part_1, Port_Balance_1, Port_Balance_2 = split_into_three_parts(combined_df, max_rows=80) 
+            '''
+        
+        if len(port_df) < 80:
+            port_df_side_added = assigning_side_for_less_than_80_pin_count(port_df)
+            df.loc[port_df.index, 'Side'] = port_df_side_added['Side'].values
+            
+        else:
+            # Calculate number of parts needed
+            n_parts_needed = (len(combined_df) + 79) // 80  # Ceiling division
+            port_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80,Strict_Population=Strict_Population)
+            
+            # Assign to variables for backward compatibility
+            Port_Part_1 = port_parts[0] if len(port_parts) > 0 else pd.DataFrame()
+            Port_Balance_1 = port_parts[1] if len(port_parts) > 1 else pd.DataFrame()
+            Port_Balance_2 = port_parts[2] if len(port_parts) > 2 else pd.DataFrame()
+            
+            # Store additional parts if any
+            additional_port_parts = port_parts[3:] if len(port_parts) > 3 else []
+            
+
     
     else:
         print("You will have to create more Parts")
         # Run Case 1 inside else
-        gpio_1, gpio_2, gpio_3 = test_one_GPIOcase(unfilled_df, df)
+        gpio_parts = test_one_GPIOcase(unfilled_df, df)
+        
+        # Assign to variables for backward compatibility
+        gpio_1 = gpio_parts[0] if len(gpio_parts) > 0 else pd.DataFrame()
+        gpio_2 = gpio_parts[1] if len(gpio_parts) > 1 else pd.DataFrame()
+        gpio_3 = gpio_parts[2] if len(gpio_parts) > 2 else pd.DataFrame()
+        
+        # Store additional GPIO parts if any
+        additional_gpio_parts = gpio_parts[3:] if len(gpio_parts) > 3 else []
+
     
     # Step 4: Construct the dictionary of DataFrames
     df_dict = {
@@ -683,17 +610,28 @@ def partitioning(df_last):
         'Port Table - 2': Port_Balance_1,
         'Port Table - 3': Port_Balance_2,
     }
-    # Test Case 1 : Conditionally add GPIO tables if returned
-    if any(tbl is not None for tbl in [gpio_1, gpio_2, gpio_3]):
-        for i, tbl in enumerate([gpio_1, gpio_2, gpio_3], start=1):
-            if tbl is not None:
-                df_dict[f'GPIO Table - {i}'] = tbl
+
+    # Add additional port parts dynamically
+    if 'additional_port_parts' in locals():
+        for i, part in enumerate(additional_port_parts, start=4):
+            if not part.empty:
+                df_dict[f'Port Table - {i}'] = part
+
+    # Add additional GPIO parts dynamically
+    if 'additional_gpio_parts' in locals():
+        for i, part in enumerate(additional_gpio_parts, start=4):
+            if not part.empty:
+                df_dict[f'GPIO Table - {i}'] = part
+
 
 
     # Clean up the dictionary by removing empty DataFrames
     df_dict = {key: value for key, value in df_dict.items() if not value.empty}
 
-# Final validation of splitting logic
+    # DEDUPLICATION: Remove duplicates from Others Table
+    df_dict = remove_duplicates_from_others_table(df_dict)
+
+    # Final validation of splitting logic
     total_rows_processed = sum(len(table) for table in df_dict.values())
     if total_rows_processed != len(df):
         print("❗Something went wrong with splitting into parts.")
@@ -701,61 +639,106 @@ def partitioning(df_last):
 
     return df_dict
 
-# Utility function to split into two parts
-def split_into_parts(df, max_rows=80):
-    grouped_indices = df.groupby('Priority').indices
-    part_1 = pd.DataFrame()
-    balance_1 = pd.DataFrame()
-    part_1_rows = 0
 
-    for priority, indices in grouped_indices.items():
-        group = df.loc[indices]
-        if part_1_rows + len(group) <= max_rows:
-            part_1 = pd.concat([part_1, group], ignore_index=True)
-            part_1_rows += len(group)
-        else:
-            balance_1 = pd.concat([balance_1, group], ignore_index=True)
+def split_into_n_parts(df, n_parts, max_rows=80, Strict_Population= True):
+    # Step 1: Sort groups by numeric key to ensure ordered processing
+    grouped_indices = {
+        k: v for k, v in sorted(
+            df.groupby('Priority').indices.items(),
+            key=lambda item: extract_numeric_key(item[0])
+        )
+    }
 
-    return part_1, balance_1
+    parts = [pd.DataFrame() for _ in range(n_parts)]
+    part_row_counts = [0] * n_parts
 
-# Utility function to split into three parts
-def split_into_three_parts(df, max_rows=80):
-    grouped_indices = df.groupby('Priority').indices
-    part_1 = pd.DataFrame()
-    balance_1 = pd.DataFrame()
-    balance_2 = pd.DataFrame()
-    part_1_rows = 0
-    balance_1_rows = 0
+    if Strict_Population:
+        # Original behavior (first part with space)
+        for priority, indices in grouped_indices.items():
+            group = df.loc[indices]
+            for i in range(n_parts):
+                if part_row_counts[i] + len(group) <= max_rows:
+                    parts[i] = pd.concat([parts[i], group], ignore_index=True)
+                    part_row_counts[i] += len(group)
+                    break
+            else:
+                # Force append to last part if no room
+                parts[-1] = pd.concat([parts[-1], group], ignore_index=True)
+    else:
+        # Strict ordered part population
+        current_part = 0
+        for priority, indices in grouped_indices.items():
+            group = df.loc[indices]
 
-    for priority, indices in grouped_indices.items():
-        group = df.loc[indices]
-        if part_1_rows + len(group) <= max_rows:
-            part_1 = pd.concat([part_1, group], ignore_index=True)
-            part_1_rows += len(group)
-        elif balance_1_rows + len(group) <= max_rows:
-            balance_1 = pd.concat([balance_1, group], ignore_index=True)
-            balance_1_rows += len(group)
-        else:
-            balance_2 = pd.concat([balance_2, group], ignore_index=True)
+            if part_row_counts[current_part] + len(group) > max_rows:
+                current_part += 1
+                if current_part >= n_parts:
+                    print(f"⚠️ Not enough parts to hold all groups within max_rows limit.")
+                    break
 
-    return part_1, balance_1, balance_2
+            parts[current_part] = pd.concat([parts[current_part], group], ignore_index=True)
+            part_row_counts[current_part] += len(group)
+
+    return parts
+
+
+
+def remove_duplicates_from_others_table(df_dict):
+    """
+    Remove any rows from 'Others Table' that appear in any other table
+    """
+    if 'Others Table' not in df_dict or df_dict['Others Table'].empty:
+        return df_dict
+    
+    others_df = df_dict['Others Table'].copy()
+    
+    # Get all other tables (exclude 'Others Table')
+    other_tables = {key: df for key, df in df_dict.items() if key != 'Others Table' and not df.empty}
+    
+    if not other_tables:
+        return df_dict
+    
+    # Combine all other tables to find duplicates
+    all_other_rows = pd.concat(other_tables.values(), ignore_index=True)
+    
+    # Find rows in Others Table that don't exist in other tables
+    # Using a combination of key columns to identify unique rows
+    key_columns = ['Pin Display Name', 'Pin Designator']  # Adjust these columns as needed
+    
+    # Create a set of tuples for fast lookup
+    other_rows_set = set()
+    for _, row in all_other_rows.iterrows():
+        key_tuple = tuple(row[col] for col in key_columns if col in row.index)
+        other_rows_set.add(key_tuple)
+    
+    # Filter Others Table to remove duplicates
+    filtered_others = []
+    for _, row in others_df.iterrows():
+        key_tuple = tuple(row[col] for col in key_columns if col in row.index)
+        if key_tuple not in other_rows_set:
+            filtered_others.append(row)
+    
+    # Update the Others Table
+    if filtered_others:
+        df_dict['Others Table'] = pd.DataFrame(filtered_others).reset_index(drop=True)
+    else:
+        # Remove Others Table if it's empty after deduplication
+        df_dict.pop('Others Table', None)
+    
+    return df_dict
 
 def filter_out_power_pins(row, df):
-    df['Priority'] = df['Priority'].fillna('')
+    """
+    FIXED VERSION: Better handling of NaN values and side assignment
+    """
+    # Fill NaN values in Priority column
+    priority_value = str(row['Priority']) if pd.notna(row['Priority']) else ''
 
-    left_power_mask = df['Priority'].str.startswith('A')
-    #right_power_mask = df['Priority'].str.startswith('Z','Y')
-    right_power_mask = df['Priority'].str.startswith(('Z', 'Y'))
-
-
-    # Create lists of indices for left and right power using the masks
-    left_power = df.index[left_power_mask].tolist()
-    right_power = df.index[right_power_mask].tolist()
-
-    # Return based on the allocation
-    if row.name in left_power:
+    # Check for left power pins (starting with 'A')
+    if priority_value.startswith('A'):
         return 'Left'
-    elif row.name in right_power:
+    # Check for right power pins (starting with 'Z' or 'Y')  
+    elif priority_value.startswith(('Z', 'Y')):
         return 'Right'
     else:
         return None
@@ -769,7 +752,7 @@ def test_one_GPIOcase(unfilled_df, df):
 
     if gpio_df.empty:
         print("No GPIO Pins found — passing for now.")
-        return None, None, None
+        return []
 
     gpio_count = len(gpio_df)
     print(f"Found {gpio_count} GPIO Pins")
@@ -780,16 +763,16 @@ def test_one_GPIOcase(unfilled_df, df):
     if 40 < len(gpio_df) < 80:
         port_df_side_added = assigning_side_for_less_than_80_pin_count(gpio_df)
         df.loc[gpio_df.index, 'Side'] = port_df_side_added['Side'].values
-        return port_df_side_added, None, None
-
-    elif 80 < len(combined_df) <= 160:
-        Port_Part_1, Port_Balance_1 = split_into_parts(combined_df, max_rows=80)
-        return Port_Part_1, Port_Balance_1, None
+        return [port_df_side_added]
 
     else:
-        Port_Part_1, Port_Balance_1, Port_Balance_2 = split_into_three_parts(combined_df, max_rows=80)
-        return Port_Part_1, Port_Balance_1, Port_Balance_2
+        # Calculate number of parts needed
+        n_parts_needed = (len(combined_df) + 79) // 80  # Ceiling division
+        gpio_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80,Strict_Population=True)
+        return gpio_parts
 
 
 
-############################################
+
+###########################################
+
