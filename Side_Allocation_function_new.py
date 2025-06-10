@@ -590,11 +590,18 @@ def partitioning(df_last, Strict_Population):
         print("You will have to create more Parts")
         # Run Case 1 inside else
         gpio_parts = test_one_GPIOcase(unfilled_df, df)
+        # Run Case 2 - SDRB  
+        sdrb_parts = test_two_SRDBcase(unfilled_df, df)
         
         # Assign to variables for backward compatibility
         gpio_1 = gpio_parts[0] if len(gpio_parts) > 0 else pd.DataFrame()
         gpio_2 = gpio_parts[1] if len(gpio_parts) > 1 else pd.DataFrame()
         gpio_3 = gpio_parts[2] if len(gpio_parts) > 2 else pd.DataFrame()
+        # Assign SDRB variables 
+        sdrb_1 = sdrb_parts[0] if len(sdrb_parts) > 0 else pd.DataFrame()
+        sdrb_2 = sdrb_parts[1] if len(sdrb_parts) > 1 else pd.DataFrame()
+        sdrb_3 = sdrb_parts[2] if len(sdrb_parts) > 2 else pd.DataFrame()
+        additional_sdrb_parts = sdrb_parts[3:] if len(sdrb_parts) > 3 else []
         
         # Store additional GPIO parts if any
         additional_gpio_parts = gpio_parts[3:] if len(gpio_parts) > 3 else []
@@ -768,11 +775,222 @@ def test_one_GPIOcase(unfilled_df, df):
     else:
         # Calculate number of parts needed
         n_parts_needed = (len(combined_df) + 79) // 80  # Ceiling division
-        gpio_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80,Strict_Population=True)
+        gpio_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80,Strict_Population=False)
         return gpio_parts
+    
+
+def test_two_SRDBcase(unfilled_df, df):
+    """
+    Handles SDRB_Pins from the Priority column - mirrors the GPIO logic
+    """
+    print("Test Two - Seeing if there are more pins that are SDRB")
+
+    sdrb_mask = unfilled_df['Priority'].str.contains('SDRB_Pins', na=False)
+    sdrb_df = unfilled_df[sdrb_mask]
+
+    if sdrb_df.empty:
+        print("No SDRB Pins found — passing for now.")
+        return []
+
+    sdrb_count = len(sdrb_df)
+    print(f"Found {sdrb_count} SDRB Pins")
+
+    other_unnamed_df = unfilled_df[~unfilled_df.index.isin(sdrb_df.index)]        
+    combined_df = pd.concat([sdrb_df, other_unnamed_df], ignore_index=True)
+
+    if 40 < len(sdrb_df) < 80:
+        port_df_side_added = assigning_side_for_less_than_80_pin_count(sdrb_df)
+        df.loc[sdrb_df.index, 'Side'] = port_df_side_added['Side'].values
+        return [port_df_side_added]
+
+    else:
+        # Calculate number of parts needed
+        n_parts_needed = (len(combined_df) + 79) // 80  # Ceiling division
+        sdrb_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80, Strict_Population=False)
+        return sdrb_parts
 
 
 
 
 ###########################################
+
+def partitioning(df_last, Strict_Population):
+    """
+    Partitioning function with improved debugging and GPIO/SDRB separation
+    """
+    print("=== PARTITIONING START ===")
+    
+    # Step 1: Filter and sort by priority
+    df = filter_and_sort_by_priority(df_last)
+    print(f"Step 1: Filtered and sorted DataFrame - {len(df)} rows")
+
+    # Step 2: Apply filter for power pins and update the 'Side' column
+    df['Side'] = df.apply(filter_out_power_pins, args=(df,), axis=1)
+    power_df = df[df['Side'].isin(['Left', 'Right'])]
+    df.loc[power_df.index, 'Side'] = power_df['Side']
+    print(f"Step 2: Power pins processed - {len(power_df)} power pins found")
+
+    # Step 3: Handle unfilled rows
+    unfilled_df = df[df['Side'].isna()]
+    number_of_rows_left = len(unfilled_df)
+    print(f"Step 3: Unfilled rows - {number_of_rows_left} rows remaining")
+
+    # NEW FEATURE: Check for GPIO and SDRB pins that need separate handling
+    gpio_pins = unfilled_df[unfilled_df['Priority'].str.contains('GPIO_Pins', na=False)]
+    sdrb_pins = unfilled_df[unfilled_df['Priority'].str.contains('SDRB_Pins', na=False)]
+    
+    print(f"GPIO pins found: {len(gpio_pins)}")
+    print(f"SDRB pins found: {len(sdrb_pins)}")
+    
+    # Separate GPIO/SDRB if they exceed 40 pins
+    gpio_parts = []
+    sdrb_parts = []
+    
+    if len(gpio_pins) > 40:
+        print(">>> GPIO pins > 40: Creating separate GPIO tables")
+        gpio_parts = test_one_GPIOcase(unfilled_df, df)
+        # Remove GPIO pins from unfilled_df for main processing
+        unfilled_df = unfilled_df[~unfilled_df['Priority'].str.contains('GPIO_Pins', na=False)]
+        print(f">>> GPIO separated: {len(gpio_parts)} GPIO parts created")
+    
+    if len(sdrb_pins) > 40:
+        print(">>> SDRB pins > 40: Creating separate SDRB tables")
+        sdrb_parts = test_two_SRDBcase(unfilled_df, df)
+        # Remove SDRB pins from unfilled_df for main processing
+        unfilled_df = unfilled_df[~unfilled_df['Priority'].str.contains('SDRB_Pins', na=False)]
+        print(f">>> SDRB separated: {len(sdrb_parts)} SDRB parts created")
+    
+    # Update the count after removing GPIO/SDRB
+    number_of_rows_left = len(unfilled_df)
+    print(f"Remaining unfilled rows after GPIO/SDRB separation: {number_of_rows_left}")
+
+    # Initialize result DataFrames
+    df_Part_A = pd.DataFrame()
+    port_df_side_added = pd.DataFrame()
+    Port_Balance_1 = pd.DataFrame()
+    Port_Balance_2 = pd.DataFrame()
+    Port_Part_1 = pd.DataFrame()
+    additional_port_parts = []
+
+    # MAIN LOGIC: Handle remaining unfilled rows (same as your original working logic)
+    if number_of_rows_left <= 80:
+        print(">>> CASE 1: Only one extra Part (≤80 rows)")
+        
+        df_Part_A = filter_and_sort_by_priority(unfilled_df)
+        df_Part_A['Side'] = df_Part_A.apply(lambda row: allocate_pin_side_by_priority(row, df_Part_A), axis=1)
+        print_grid_spaces(df_Part_A)
+        df_Part_A = balance_grid_space(df_Part_A)
+
+        # Update unfilled rows in the original DataFrame
+        df.loc[unfilled_df.index, 'Side'] = df_Part_A['Side'].values
+
+        # Recheck unfilled rows
+        number_of_rows_left = df['Side'].isna().sum()
+        print(f"After Part A processing: {number_of_rows_left} unfilled rows")
+
+        if number_of_rows_left == 0:
+            print("✅ All bins are filled.")
+        else:
+            print("❌ Something is wrong")
+            print(f"Unfilled DataFrame: {df[df['Side'].isna()]}")
+    
+    elif number_of_rows_left > 80 and any(unfilled_df['Priority'].str.startswith('P_Port')):
+        print(">>> CASE 2: Port-based splitting (>80 rows with P_Port)")
+        
+        port_df = unfilled_df[unfilled_df['Priority'].str.startswith('P_Port')]
+        other_unnamed_df = unfilled_df[~unfilled_df.index.isin(port_df.index)]
+
+        print(f"Port df length: {len(port_df)}")
+        print(f"Other unnamed df length: {len(other_unnamed_df)}")
+        
+        combined_df = pd.concat([port_df, other_unnamed_df], ignore_index=True)
+        overall_length = len(combined_df)
+        print(f"Overall length of combined DataFrame: {overall_length}")
+        
+        if len(port_df) < 80:
+            print(">>> Port pins < 80: Single port table")
+            port_df_side_added = assigning_side_for_less_than_80_pin_count(port_df)
+            df.loc[port_df.index, 'Side'] = port_df_side_added['Side'].values
+        else:
+            print(">>> Port pins ≥ 80: Multiple port tables")
+            # Calculate number of parts needed
+            n_parts_needed = (len(combined_df) + 79) // 80  # Ceiling division
+            print(f"Creating {n_parts_needed} port parts")
+            
+            port_parts = split_into_n_parts(combined_df, n_parts_needed, max_rows=80, Strict_Population=Strict_Population)
+            
+            # Assign to variables for backward compatibility
+            Port_Part_1 = port_parts[0] if len(port_parts) > 0 else pd.DataFrame()
+            Port_Balance_1 = port_parts[1] if len(port_parts) > 1 else pd.DataFrame()
+            Port_Balance_2 = port_parts[2] if len(port_parts) > 2 else pd.DataFrame()
+            
+            # Store additional parts if any
+            additional_port_parts = port_parts[3:] if len(port_parts) > 3 else []
+            print(f"Port parts created: Main={len(Port_Part_1)}, Balance1={len(Port_Balance_1)}, Balance2={len(Port_Balance_2)}, Additional={len(additional_port_parts)}")
+    
+    else:
+        print(">>> CASE 3: Other cases - creating more parts")
+        # Handle any remaining GPIO/SDRB that wasn't caught above
+        if len(gpio_pins) <= 40 and len(gpio_pins) > 0:
+            print(">>> Processing remaining GPIO pins (≤40)")
+            gpio_parts = test_one_GPIOcase(unfilled_df, df)
+        
+        if len(sdrb_pins) <= 40 and len(sdrb_pins) > 0:
+            print(">>> Processing remaining SDRB pins (≤40)")
+            sdrb_parts = test_two_SRDBcase(unfilled_df, df)
+
+    # Step 4: Construct the dictionary of DataFrames
+    print("=== BUILDING RESULT DICTIONARY ===")
+    
+    df_dict = {
+        'Power Table': power_df,
+        'Part A Table': df_Part_A,
+        'Port Table': port_df_side_added,
+        'Others Table': df[df['Side'].isna()],
+        'Port Table - 1': Port_Part_1,
+        'Port Table - 2': Port_Balance_1,
+        'Port Table - 3': Port_Balance_2,
+    }
+
+    # Add additional port parts dynamically
+    for i, part in enumerate(additional_port_parts, start=4):
+        if not part.empty:
+            df_dict[f'Port Table - {i}'] = part
+            print(f"Added Port Table - {i}: {len(part)} rows")
+
+    # Add GPIO tables dynamically
+    for i, part in enumerate(gpio_parts, start=1):
+        if not part.empty:
+            df_dict[f'GPIO Table - {i}'] = part
+            print(f"Added GPIO Table - {i}: {len(part)} rows")
+
+    # Add SDRB tables dynamically  
+    for i, part in enumerate(sdrb_parts, start=1):
+        if not part.empty:
+            df_dict[f'SDRB Table - {i}'] = part
+            print(f"Added SDRB Table - {i}: {len(part)} rows")
+
+    # Clean up the dictionary by removing empty DataFrames
+    df_dict = {key: value for key, value in df_dict.items() if not value.empty}
+    print(f"Final dictionary has {len(df_dict)} non-empty tables")
+
+    # DEDUPLICATION: Remove duplicates from Others Table
+    df_dict = remove_duplicates_from_others_table(df_dict)
+
+    # Final validation of splitting logic
+    total_rows_processed = sum(len(table) for table in df_dict.values())
+    print(f"=== VALIDATION ===")
+    print(f"Original rows: {len(df)}")
+    print(f"Total rows processed: {total_rows_processed}")
+    
+    if total_rows_processed != len(df):
+        print("❗ WARNING: Row count mismatch!")
+        print("Table breakdown:")
+        for key, table in df_dict.items():
+            print(f"  {key}: {len(table)} rows")
+    else:
+        print("✅ All rows processed correctly")
+
+    print("=== PARTITIONING END ===")
+    return df_dict
 

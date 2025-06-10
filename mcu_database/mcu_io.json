@@ -644,7 +644,7 @@
     "LVRXD7M",
     "LVRXD7P"
   ],
-  "MEMORY_DATA_BUS_SDRB": [
+  "MEMORY_DATA_BUS_SDRB_Pins": [
     "SDRBCK",
     "SDRBCKB",
     "SDRBDQ0",
@@ -680,13 +680,13 @@
     "SDRBDQ8",
     "SDRBDQ9"
   ],
-  "MEMORY_DATA_MASKS_SDRB": [
+  "MEMORY_DATA_MASKS_SDRB_Pins": [
     "SDRBDM0",
     "SDRBDM1",
     "SDRBDM2",
     "SDRBDM3"
   ],
-  "MEMORY_DATA_STROBES": [
+  "MEMORY_DATA_STROBES_SDRB_Pins": [
     "SDRBDQS0",
     "SDRBDQS0B",
     "SDRBDQS1",

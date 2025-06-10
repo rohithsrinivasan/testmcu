@@ -140,6 +140,7 @@
       "ADC1_AGND",
       "ADC2_AGND",
       "ADC_AVSS",
+      "VSS_ADC",
       "READY"
     ],
     "Analog Power Supply Negative ISO": [

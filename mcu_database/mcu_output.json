@@ -270,7 +270,7 @@
     "LED2",
     "LED3"
   ],
-  "MEMORY_ADDRESS_OUTPUTS": [
+  "MEMORY_ADDRESS_OUTPUTS_SDRB_Pins": [
     "SDRBA0",
     "SDRBA1",
     "SDRBA10",
@@ -289,7 +289,7 @@
     "SDRBBA1",
     "SDRBBA2"
   ],
-  "MEMORY_CONTROL_OUTPUTS": [
+  "MEMORY_CONTROL_OUTPUTS_SDRB_Pins": [
     "SDRBCAS",
     "SDRBCKE",
     "SDRBCS",
