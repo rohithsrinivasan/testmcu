@@ -140,7 +140,7 @@
       "Analog_Input_Pins": "IOL_Analog_Input_Pins",
       "LCD Pins": "ION_LCD Pins",
       "Switching Node": "IOM_Switching Node",
-      "DDR3L Pins": "IOO_DDR3L Pins",
+      "MDQ Pins": "IOO_MDQ Pins",
       "DSMDN Data Lines" : "IOP_DSMDN Data Lines",
       "DSMDDP Data Lines" : "IOQ_DSMDDP Data Lines",
       "DSSD Data Lines" : "IOR_DSSD Data Lines",
@@ -206,6 +206,7 @@
       "Clock_External_Base": "CE_Clock_External_Base",
       "Clock_Capacitor": "CC_External_Capacitive_Clocks/Oscillators",
       "Reference_Clk": "CD_Reference_Clocks/Oscillators",
+      "Clockout" : "CE_Clockout",
       "On_Chip_Oscillator": "CO_On_Chip_Clocks/Oscillators",
       "PCIe_Reference_Clocks" : "CY_PCIe_Reference_Clocks",
       "Generic_Reference_Clocks" : "CZ_Generic_Reference_Clocks"

@@ -92,6 +92,15 @@
     "EXTLDP",
     "XCOUT"
   ],
+
+  "Clockout":[
+    "CLKOUT",
+    "CLKOUT25M",
+    "CLKOUTENB",
+    "CLKOUT_A",
+    "CLKOUT_B"
+
+  ],
   "GPIO_Output": [
     "A0",
     "A0(H\\B\\S\\)",
@@ -329,11 +338,6 @@
     "CKIO2",
     "CKOUT",
     "CKPO",
-    "CLKOUT",
-    "CLKOUT25M",
-    "CLKOUTENB",
-    "CLKOUT_A",
-    "CLKOUT_B",
     "CS0",
     "CS0#",
     "CS1#",

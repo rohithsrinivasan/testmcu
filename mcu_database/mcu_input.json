@@ -814,9 +814,6 @@
     "\\WAIT"
   ],
   "General_IO": [
-    "PF10",
-    "PF11",
-    "PF12",
     "PGA00N",
     "PGA00P",
     "PGA0N",
@@ -1116,11 +1113,6 @@
     "OVC0",
     "OVC1",
     "PCICLK",
-    "PF13",
-    "PF14",
-    "PF15",
-    "PF8",
-    "PF9",
     "PGA0P",
     "PGA10N",
     "PGA10P",

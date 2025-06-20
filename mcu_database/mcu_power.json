@@ -2,6 +2,7 @@
 
     "Analog Power Supply Negative_AVSS": [
       "AVSS",
+      "AVss",
       "AVSS0",
       "AVSS1",
       "AVSS2",
@@ -11,6 +12,7 @@
     ],
     "Analog Power Supply Negative_VSS": [
       "VSS",
+      "Vss",
       "VSS0",
       "VSS1",
       "VSS1_USBHS",
